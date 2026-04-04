@@ -171,7 +171,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_RaycastTarget: 1
+  m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
@@ -504,7 +504,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Lvl 1
+  m_text: Lvl 124
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 09360c21015679d43a59a8cf8eddd273, type: 2}
   m_sharedMaterial: {fileID: 695530483056987728, guid: 09360c21015679d43a59a8cf8eddd273, type: 2}
