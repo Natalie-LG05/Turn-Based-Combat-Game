@@ -10,8 +10,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: d91fce09062dedc478aa3879f5f77df5, type: 3}
-  m_Name: HardShell
+  m_Name: Evasive
   m_EditorClassIdentifier: Assembly-CSharp::AbilityData
-  _name: Hard Shell
-  _id: hard_shell
-  _description: Increases your defense the lower your HP is.
+  _name: Evasive
+  _id: evasive
+  _description: Gain twice the evasion from effects that increase evasion.

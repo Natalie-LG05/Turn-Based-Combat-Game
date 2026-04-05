@@ -6,6 +6,9 @@ public class CharacterData : ScriptableObject
     [SerializeField] protected string _name;
     [SerializeField] protected string _id;
     [SerializeField, TextArea] protected string _description;
+    [SerializeField] protected Sprite _sprite;
+
+    [SerializeField] protected CharacterCategory[] categories;
 
     [SerializeField] protected int _baseStatPoints;
     [SerializeField] protected int _levelupStatPoints;
@@ -25,6 +28,8 @@ public class CharacterData : ScriptableObject
     public MoveLevelPair[] MoveLearnset { get => _moveLearnset; }
     public AbilityLevelPair[] AbilityLearnset { get => _abilityLearnset; }
 }
+
+public enum CharacterCategory { Crab, Bird }
 
 [System.Serializable]
 public class StatSpread

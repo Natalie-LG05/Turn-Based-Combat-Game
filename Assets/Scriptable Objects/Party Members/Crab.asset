@@ -15,6 +15,8 @@ MonoBehaviour:
   _name: Crab
   _id: crab
   _description: "Your first party member! It\u2019s a really strong crab\u2026"
+  _sprite: {fileID: 2104901783972924173, guid: 6d292cba59e72bd47b75dd8b68757397, type: 3}
+  categories: 00000000
   _baseStatPoints: 75
   _levelupStatPoints: 10
   _statSpread:
@@ -25,9 +27,9 @@ MonoBehaviour:
     _speed: 15
   _moveLearnset:
   - _moveData: {fileID: 11400000, guid: c0183c9c14cb7a2419ffe4e89cfd8882, type: 2}
-    level: 0
+    _level: 0
   - _moveData: {fileID: 11400000, guid: 0b8501ffd83419a4cb135526f8460e53, type: 2}
-    level: 5
+    _level: 0
   _abilityLearnset:
   - _abilityData: {fileID: 11400000, guid: 14c4573371e5a6e4cba439aa1db454f4, type: 2}
-    level: 0
+    _level: 0

@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 430a3500be2d3614cb4dd1ada36d26e3, type: 3}
+  m_Name: Beach
+  m_EditorClassIdentifier: Assembly-CSharp::AreaData
+  _name: Beach
+  _id: beach
+  _description: A nice, sandy beach.
+  _modifiers:
+  - {fileID: 11400000, guid: 7a6bb238ebf318649b3467f0dc57b862, type: 2}
+  _enemies:
+  - {fileID: 11400000, guid: 56814c1c6d93d2a498966674adc0bc31, type: 2}
+  - {fileID: 11400000, guid: f685163ae6b99fe40aec5e781b00f8d4, type: 2}

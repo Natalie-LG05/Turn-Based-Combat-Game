@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class StatusEffect : MonoBehaviour
+public class StatusEffectInstance : MonoBehaviour
 {
     private StatusEffectData _data;
     private int _duration;

@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 537f0a1829c812d4fb533d5b25fbd2aa, type: 3}
+  m_Name: Testing
+  m_EditorClassIdentifier: Assembly-CSharp::EncounterData
+  _name: Testing
+  _id: testing
+  _description: Encounter used for testing things.
+  _type: 0
+  _difficultyLevel: 1
+  _area: {fileID: 11400000, guid: 30eb7a8465ecf61458c823b859cb2d36, type: 2}
+  modifiers: []
+  waves:
+  - _enemies:
+    - {fileID: 11400000, guid: 56814c1c6d93d2a498966674adc0bc31, type: 2}
+    - {fileID: 11400000, guid: f685163ae6b99fe40aec5e781b00f8d4, type: 2}

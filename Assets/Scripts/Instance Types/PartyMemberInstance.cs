@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class PartyMember : Character
+public class PartyMemberInstance : CharacterInstance
 {
     //TODO: need to make equipable items first, then can uncomment the below code and expand on it
     //[SerializeField] private Weapon _weapon;

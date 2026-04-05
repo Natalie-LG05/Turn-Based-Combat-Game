@@ -10,25 +10,20 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 05c5dc6b49e6d7f4b9dcbbca7127ff27, type: 3}
-  m_Name: TrapClaw
+  m_Name: Evade
   m_EditorClassIdentifier: Assembly-CSharp::MoveData
-  _name: Trap Claw
-  _id: trap_claw
-  _description: Pinch the target with extreme  force, inflicting speed down.
-  _type: 0
+  _name: Evade
+  _id: evade
+  _description: Increase your evasion.
+  _type: 4
   _element: 0
-  _categories: 0000000002000000
-  _damageEffects:
-  - _targets: 0
-    _accuracy: 100
-    _power: 20
-    _element: 0
-    _hits: 1
+  _categories: 01000000
+  _damageEffects: []
   _statusEffects:
-  - _targets: 0
-    _accuracy: 70
+  - _targets: 2
+    _accuracy: 100
     _power: 50
     _element: 0
     _duration: 3
     statusEffects:
-    - {fileID: 11400000, guid: 115e12c5546c95648b92742f198abe75, type: 2}
+    - {fileID: 11400000, guid: 29078210158b47044bc015d040950bd1, type: 2}

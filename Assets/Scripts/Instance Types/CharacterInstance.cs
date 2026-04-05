@@ -3,7 +3,7 @@ using System.Linq;
 using UnityEngine;
 
 [System.Serializable]
-public class Character
+public class CharacterInstance
 {
     [SerializeField] protected CharacterData characterData;
 
@@ -14,7 +14,7 @@ public class Character
 
     public Dictionary<Stat, int> Stats { get; private set; }
     public Dictionary<Stat, List<float>> StatModifiers { get; private set; }
-    public int MaxHP {  get { return GetStat(Stat.MaxHP); } }
+    public int MaxHP { get { return GetStat(Stat.MaxHP); } }
     public int Attack { get { return GetStat(Stat.Attack); } }
     public int Support { get { return GetStat(Stat.Support); } }
     public int Defense { get { return GetStat(Stat.Defense); } }
