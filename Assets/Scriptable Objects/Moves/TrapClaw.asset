@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::MoveData
   _name: Trap Claw
   _id: trap_claw
-  _description: Pinch the target with extreme  force, inflicting speed down.
+  _description: Pinch the target with extreme force, inflicting speed down.
   _type: 0
   _element: 0
   _categories: 0000000002000000

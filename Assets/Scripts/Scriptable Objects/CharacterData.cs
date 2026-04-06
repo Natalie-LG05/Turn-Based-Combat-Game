@@ -20,6 +20,7 @@ public class CharacterData : ScriptableObject
     public string Name { get => _name; }
     public string Id { get => _id; }
     public string Description { get => _description; }
+    public Sprite Sprite { get => _sprite; }
 
     public int BaseStatPoints { get => _baseStatPoints; }
     public int LevelupStatPoints { get => _levelupStatPoints; }
@@ -40,11 +41,11 @@ public class StatSpread
     [SerializeField, Range(0,100)] private int _defense;
     [SerializeField, Range(0, 100)] private int _speed;
 
-    public int MaxHP { get; private set; }
-    public int Attack { get; private set; }
-    public int Support { get; private set; }
-    public int Defense { get; private set; }
-    public int Speed { get; private set; }
+    public int MaxHP { get => _maxHP; }
+    public int Attack { get => _attack; }
+    public int Support { get => _support; }
+    public int Defense { get => _defense; }
+    public int Speed { get => _speed; }
 }
 
 [System.Serializable]

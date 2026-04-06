@@ -11,9 +11,20 @@ public class EncounterData : ScriptableObject
     [SerializeField] private int _difficultyLevel;
 
     [SerializeField] private AreaData _area;
-    [SerializeField] private EncounterModifierData[] modifiers;
-    [SerializeField] private EncounterWave[] waves;
+    [SerializeField] private EncounterModifierData[] _modifiers;
+    [SerializeField] private EncounterWave[] _waves;
     //TODO: Encounter rewards
+
+    public string Name { get => _name; }
+    public string Id { get => _id; }
+    public string Description { get => _description; }
+
+    public EncounterType Type { get => _type; }
+    public int DifficultyLevel { get => _difficultyLevel; }
+
+    public AreaData Area { get => _area; }
+    public EncounterModifierData[] Modifiers { get => _modifiers; }
+    public EncounterWave[] Waves { get => _waves; }
 }
 
 public enum EncounterType { Normal, SingleWild, DoubleWild, Hard, Dungeon }
@@ -22,4 +33,6 @@ public enum EncounterType { Normal, SingleWild, DoubleWild, Hard, Dungeon }
 public class EncounterWave
 {
     [SerializeField] private EnemyInstance[] _enemies;
+
+    public EnemyInstance[] Enemies { get => _enemies; }
 }

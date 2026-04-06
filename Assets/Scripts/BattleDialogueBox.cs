@@ -6,20 +6,23 @@ public class BattleDialogueBox : MonoBehaviour
 {
     [SerializeField] private int charsPerSec;
 
-    [SerializeField] TextMeshProUGUI dialogueText;
+    [SerializeField] private TextMeshProUGUI dialogueText;
+    [SerializeField] private float dialogueDuration;
 
-    public void SetDialogue(string text)
+    public void SetDialogue(string dialogue)
     {
-        dialogueText.text = text;
+        dialogueText.text = dialogue;
     }
 
-    public IEnumerator TypeDialogue(string text)
+    public IEnumerator TypeDialogue(string dialogue)
     {
         dialogueText.text = "";
-        foreach (char c in text.ToCharArray())
+        foreach (char c in dialogue.ToCharArray())
         {
             dialogueText.text += c;
             yield return new WaitForSeconds(1f / charsPerSec);
         }
+
+        yield return new WaitForSeconds(dialogueDuration);
     }
 }

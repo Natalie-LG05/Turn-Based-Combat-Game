@@ -7,7 +7,7 @@ public class EnemyInstance : CharacterInstance
 
     public override void Init()
     {
-        characterData = enemyData;
+        _characterData = enemyData;
         base.Init();
     }
 }

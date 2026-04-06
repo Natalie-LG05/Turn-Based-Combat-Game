@@ -15,4 +15,5 @@ MonoBehaviour:
   _name: Hard Shell
   _id: hard_shell
   _description: Defense increased by {x}%.
+  _iconColor: {r: 0.6784314, g: 0.6784314, b: 0.6784314, a: 1}
   _isPermanent: 1

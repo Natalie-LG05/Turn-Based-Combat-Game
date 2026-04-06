@@ -16,7 +16,7 @@ public class PartyMemberInstance : CharacterInstance
 
     public override void Init()
     {
-        characterData = partyMemberData;
+        _characterData = partyMemberData;
         base.Init();
     }
 }

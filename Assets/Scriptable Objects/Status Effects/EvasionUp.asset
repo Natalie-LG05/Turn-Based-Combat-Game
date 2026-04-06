@@ -15,4 +15,5 @@ MonoBehaviour:
   _name: Evasion Up
   _id: evasion_up
   _description: Evasion increased by {x}%.
+  _iconColor: {r: 0.6117647, g: 1, b: 0.27058825, a: 1}
   _isPermanent: 0

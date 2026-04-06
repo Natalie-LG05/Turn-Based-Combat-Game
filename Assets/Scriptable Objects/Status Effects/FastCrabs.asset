@@ -15,4 +15,5 @@ MonoBehaviour:
   _name: Fast Crabs
   _id: fast_crabs
   _description: +15% Speed if this character is a crab.
+  _iconColor: {r: 1, g: 1, b: 1, a: 1}
   _isPermanent: 1

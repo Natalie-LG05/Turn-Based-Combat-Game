@@ -5,12 +5,22 @@ using UnityEngine;
 [System.Serializable]
 public class CharacterInstance
 {
-    protected CharacterData characterData;
+    protected CharacterData _characterData;
+    protected CharacterUI _characterUI;
 
-    [SerializeField, Min(1)] protected int level;
+    [SerializeField, Min(1)] protected int _level;
 
     protected int totalStatPoints;
-    protected int currentHP;
+    protected int _currentHP;
+
+    public CharacterData CharacterData { get => _characterData; }
+    public CharacterUI CharacterUI { get => _characterUI; set => _characterUI = value; }
+
+    public int Level { get => _level; }
+
+    public int CurrentHP { get => _currentHP; }
+
+    public List<StatusEffectInstance> StatusEffects { get; private set; }
 
     public Dictionary<Stat, int> Stats { get; private set; }
     public Dictionary<Stat, List<float>> StatModifiers { get; private set; }
@@ -29,20 +39,26 @@ public class CharacterInstance
         CalculateTotalStatPoints();
         CalculateStartingStats();
         ResetStatModifiers();
-        currentHP = MaxHP;
+        ResetStatusEffects();
+        _currentHP = MaxHP;
 
         DetermineMoveset();
         DetermineAbilities();
     }
 
+    public void BattleStart()
+    {
+        _currentHP = MaxHP;
+    }
+
     protected void CalculateStartingStats()
     {
         Stats = new Dictionary<Stat, int>();
-        Stats.Add(Stat.MaxHP, Mathf.RoundToInt(totalStatPoints * characterData.StatSpread.MaxHP));
-        Stats.Add(Stat.Attack, Mathf.RoundToInt(totalStatPoints * characterData.StatSpread.Attack));
-        Stats.Add(Stat.Support, Mathf.RoundToInt(totalStatPoints * characterData.StatSpread.Support));
-        Stats.Add(Stat.Defense, Mathf.RoundToInt(totalStatPoints * characterData.StatSpread.Defense));
-        Stats.Add(Stat.Speed, Mathf.RoundToInt(totalStatPoints * characterData.StatSpread.Speed));
+        Stats.Add(Stat.MaxHP, Mathf.RoundToInt(totalStatPoints * (_characterData.StatSpread.MaxHP / 100.0f)));
+        Stats.Add(Stat.Attack, Mathf.RoundToInt(totalStatPoints * (_characterData.StatSpread.Attack / 100.0f)));
+        Stats.Add(Stat.Support, Mathf.RoundToInt(totalStatPoints * (_characterData.StatSpread.Support / 100.0f)));
+        Stats.Add(Stat.Defense, Mathf.RoundToInt(totalStatPoints * (_characterData.StatSpread.Defense / 100.0f)));
+        Stats.Add(Stat.Speed, Mathf.RoundToInt(totalStatPoints * (_characterData.StatSpread.Speed / 100.0f)));
     }
 
     protected void ResetStatModifiers()
@@ -55,9 +71,14 @@ public class CharacterInstance
         StatModifiers.Add(Stat.Speed, new List<float>());
     }
 
+    protected void ResetStatusEffects()
+    {
+        StatusEffects = new List<StatusEffectInstance>();
+    }
+
     protected void CalculateTotalStatPoints()
     {
-        totalStatPoints = characterData.BaseStatPoints + (characterData.LevelupStatPoints * level);
+        totalStatPoints = _characterData.BaseStatPoints + (_characterData.LevelupStatPoints * (_level - 1));
     }
     protected int GetStat(Stat stat)
     {
@@ -75,9 +96,9 @@ public class CharacterInstance
     {
         Moveset = new List<MoveData>();
         
-        foreach (MoveLevelPair mlp in characterData.MoveLearnset)
+        foreach (MoveLevelPair mlp in _characterData.MoveLearnset)
         {
-            if (mlp.Level <= level)
+            if (mlp.Level <= _level)
             {
                 Moveset.Add(mlp.MoveData);
             }
@@ -88,13 +109,18 @@ public class CharacterInstance
     {
         Abilities = new List<AbilityData>();
 
-        foreach (AbilityLevelPair mlp in characterData.AbilityLearnset)
+        foreach (AbilityLevelPair mlp in _characterData.AbilityLearnset)
         {
-            if (mlp.Level <= level)
+            if (mlp.Level <= _level)
             {
                 Abilities.Add(mlp.AbilityData);
             }
         }
+    }
+
+    public void AddStatusEffect(StatusEffectInstance effect)
+    {
+        StatusEffects.Add(effect);
     }
 }
 
