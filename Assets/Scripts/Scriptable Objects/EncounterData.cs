@@ -21,5 +21,5 @@ public enum EncounterType { Normal, SingleWild, DoubleWild, Hard, Dungeon }
 [System.Serializable]
 public class EncounterWave
 {
-    [SerializeField] private EnemyData[] _enemies;
+    [SerializeField] private EnemyInstance[] _enemies;
 }

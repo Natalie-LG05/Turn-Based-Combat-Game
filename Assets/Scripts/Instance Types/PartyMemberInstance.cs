@@ -1,7 +1,10 @@
 using UnityEngine;
 
+[System.Serializable]
 public class PartyMemberInstance : CharacterInstance
 {
+    [SerializeField] private PartyMemberData partyMemberData;
+
     //TODO: need to make equipable items first, then can uncomment the below code and expand on it
     //[SerializeField] private Weapon _weapon;
     //[SerializeField] private Focus _focus;
@@ -10,4 +13,10 @@ public class PartyMemberInstance : CharacterInstance
     //[SerializeField] private MoveBooster _moveBooster;
 
     //// stat boosts
+
+    public override void Init()
+    {
+        characterData = partyMemberData;
+        base.Init();
+    }
 }
