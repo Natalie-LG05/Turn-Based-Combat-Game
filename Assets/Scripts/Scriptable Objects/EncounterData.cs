@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 [CreateAssetMenu(fileName = "NewEncounterData", menuName = "ScriptableObjects/Encounter Data", order = -1000)]
@@ -25,6 +26,14 @@ public class EncounterData : ScriptableObject
     public AreaData Area { get => _area; }
     public EncounterModifierData[] Modifiers { get => _modifiers; }
     public EncounterWave[] Waves { get => _waves; }
+
+    private void OnValidate()
+    {
+        foreach (EncounterWave wave in _waves)
+        {
+            wave.OnValidate();
+        }
+    }
 }
 
 public enum EncounterType { Normal, SingleWild, DoubleWild, Hard, Dungeon }
@@ -32,7 +41,13 @@ public enum EncounterType { Normal, SingleWild, DoubleWild, Hard, Dungeon }
 [System.Serializable]
 public class EncounterWave
 {
-    [SerializeField] private EnemyInstance[] _enemies;
+    [SerializeField] private List<EnemyInstance> _enemies;
 
-    public EnemyInstance[] Enemies { get => _enemies; }
+    public List<EnemyInstance> Enemies { get => _enemies; }
+
+    public void OnValidate()
+    {
+        if (_enemies.Count > 5)
+            _enemies.RemoveRange(5, _enemies.Count - 5);
+    }
 }

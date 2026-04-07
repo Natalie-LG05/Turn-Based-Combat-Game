@@ -7,7 +7,7 @@ public class CharacterUI : MonoBehaviour
 {
     [SerializeField] private GameObject effectIconPrefab;
 
-    private CharacterInstance character;
+    public CharacterInstance Character {  get; private set; }
     
     [SerializeField] private Image characterSprite;
 
@@ -20,7 +20,7 @@ public class CharacterUI : MonoBehaviour
     [SerializeField] private Transform effectIconContainer;
     private List<GameObject> effectIcons;
 
-    [SerializeField] private Hoverable chracterPlate;
+    [SerializeField] private Hoverable characterPlate;
 
     private void Awake()
     {
@@ -29,13 +29,30 @@ public class CharacterUI : MonoBehaviour
 
     public void SetCharacter(CharacterInstance characterInstance)
     {
-        character = characterInstance;
-        character.CharacterUI = this;
-        SetCharacterSprite(character.CharacterData.Sprite);
-        SetNameText(character.CharacterData.Name);
-        SetLevelText(character.Level);
-        SetHealthUI(character.CurrentHP, character.MaxHP);
-        SetEffectIcons(character.StatusEffects);
+        Character = characterInstance;
+        Character.CharacterUI = this;
+        SetCharacterSprite(Character.CharacterData.Sprite);
+        SetNameText(Character.CharacterData.Name);
+        SetLevelText(Character.Level);
+        SetHealthUI(Character.CurrentHP, Character.MaxHP);
+        SetEffectIcons(Character.StatusEffects);
+    }
+
+    public void AddStatusEffect(StatusEffectInstance effect)
+    {
+        NewEffectIcon(effect);
+    }
+
+    public void UpdateCurrentTurn(bool isTurn)
+    {
+        if (isTurn) characterPlate.Select(); 
+        else characterPlate.Deselect();
+    }
+
+    public void HighlightCharacterPlate(bool highlight)
+    {
+        if (highlight) characterPlate.Hover();
+        else characterPlate.Unhover();
     }
 
     private void SetCharacterSprite(Sprite sprite)
@@ -82,10 +99,15 @@ public class CharacterUI : MonoBehaviour
         {
             foreach (StatusEffectInstance effect in statusEffects)
             {
-                GameObject icon = Instantiate(effectIconPrefab, effectIconContainer);
-                effectIcons.Add(icon);
-                icon.GetComponent<StatusEffectIcon>().StatusEffect = effect;
+                NewEffectIcon(effect);
             }
         }
+    }
+
+    private void NewEffectIcon(StatusEffectInstance effect)
+    {
+        GameObject icon = Instantiate(effectIconPrefab, effectIconContainer);
+        effectIcons.Add(icon);
+        icon.GetComponent<StatusEffectIcon>().StatusEffect = effect;
     }
 }

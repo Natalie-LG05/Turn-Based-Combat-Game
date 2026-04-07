@@ -48,6 +48,7 @@ GameObject:
   - component: {fileID: 7294002951714837171}
   - component: {fileID: 6386134044008574623}
   - component: {fileID: 2384619179192208270}
+  - component: {fileID: 88182751265660187}
   m_Layer: 5
   m_Name: Character Plate
   m_TagString: Untagged
@@ -96,7 +97,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 0.6377357, g: 0.6377357, b: 0.6377357, a: 0.5764706}
+  m_Color: {r: 0.69803923, g: 0.92156863, b: 1, a: 0.5764706}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -125,9 +126,29 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9a4ed3f878e04d74b801fa89292067de, type: 3}
   m_Name: 
   m_EditorClassIdentifier: '::'
-  normalColor: {r: 0.6392157, g: 0.6392157, b: 0.6392157, a: 0.5764706}
-  selectedColor: {r: 0.6392157, g: 0.6392157, b: 0.6392157, a: 0.5764706}
-  hoverColor: {r: 0.6392157, g: 0.6392157, b: 0.6392157, a: 0.5764706}
+  normalColor: {r: 0.69803923, g: 0.92156863, b: 1, a: 0.5764706}
+  selectedColor: {r: 0.69803923, g: 0.92156863, b: 1, a: 0.5764706}
+  hoverColor: {r: 0.8980392, g: 0.9764706, b: 1, a: 0.5764706}
+  autoDetermineColors: 0
+  selectedColorMultiplier: 0.75
+  hoverColorMultiplier: 1.5
+  tooltipName: Character Info Tooltip
+  tooltipShowDelay: 0.5
+--- !u!114 &88182751265660187
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3267570234659191263}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e19747de3f5aca642ab2be37e372fb86, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Outline
+  m_EffectColor: {r: 0, g: 0, b: 0, a: 1}
+  m_EffectDistance: {x: 3, y: -3}
+  m_UseGraphicAlpha: 0
 --- !u!1 &3804930101394300677
 GameObject:
   m_ObjectHideFlags: 0
@@ -777,8 +798,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 51.9, y: 33.3}
-  m_SizeDelta: {x: 95.15, y: 50}
+  m_AnchoredPosition: {x: 50, y: 33.300003}
+  m_SizeDelta: {x: 96, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &6461099834543221637
 CanvasRenderer:
@@ -835,7 +856,7 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 32
+  m_fontSize: 32.3
   m_fontSizeBase: 30
   m_fontWeight: 400
   m_enableAutoSizing: 1
@@ -938,7 +959,7 @@ MonoBehaviour:
   healthText: {fileID: 1721003887663925506}
   healthBar: {fileID: 1216752641534258148}
   effectIconContainer: {fileID: 5220370400005905535}
-  chracterPlate: {fileID: 2384619179192208270}
+  characterPlate: {fileID: 2384619179192208270}
 --- !u!1 &8825786822029931483
 GameObject:
   m_ObjectHideFlags: 0

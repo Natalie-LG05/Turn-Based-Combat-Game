@@ -20,6 +20,8 @@ public class CharacterInstance
 
     public int CurrentHP { get => _currentHP; }
 
+    public float SpeedTieBreaker { get => Random.value; }
+
     public List<StatusEffectInstance> StatusEffects { get; private set; }
 
     public Dictionary<Stat, int> Stats { get; private set; }
@@ -49,6 +51,12 @@ public class CharacterInstance
     public void BattleStart()
     {
         _currentHP = MaxHP;
+    }
+
+    public void ApplyStatusEffect(StatusEffectInstance effect)
+    {
+        StatusEffects.Add(effect);
+        CharacterUI.AddStatusEffect(effect);
     }
 
     protected void CalculateStartingStats()
@@ -121,6 +129,7 @@ public class CharacterInstance
     public void AddStatusEffect(StatusEffectInstance effect)
     {
         StatusEffects.Add(effect);
+        CharacterUI.AddStatusEffect(effect);
     }
 }
 
