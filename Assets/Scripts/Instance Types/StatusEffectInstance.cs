@@ -2,22 +2,22 @@ using UnityEngine;
 
 public class StatusEffectInstance
 {
-    private StatusEffectData _data;
+    private StatusEffectData _statusEffectData;
     private int _duration;
     private float _power;
 
-    public StatusEffectData Data { get => _data; }
+    public StatusEffectData StatusEffectData { get => _statusEffectData; }
     public int Duration { get => _duration; }
 
     public Effect Effects { get
         {
-            return EffectsDB.StatusEffects[Data.Id];
+            return EffectsDB.StatusEffects[StatusEffectData.Id];
         } 
     }
 
     public StatusEffectInstance(StatusEffectData data, int duration, float power)
     {
-        _data = data;
+        _statusEffectData = data;
         _duration = duration;
         _power = power;
     }

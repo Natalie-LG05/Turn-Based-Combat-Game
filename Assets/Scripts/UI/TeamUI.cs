@@ -32,4 +32,11 @@ public class TeamUI : MonoBehaviour
             }
         }
     }
+
+    public void RemoveCharacter(CharacterInstance character)
+    {
+        GameObject charUI = character.CharacterUI.gameObject;
+        characterUIs.Remove(charUI);
+        Destroy(charUI);
+    }
 }

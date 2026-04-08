@@ -17,6 +17,13 @@ public class TurnOrderUI : MonoBehaviour
     
     public void SetTurnOrder(Queue<CharacterInstance> turnQueue)
     {
+        if (characterIcons.Count > 0)
+        {
+            foreach (GameObject icon in characterIcons)
+                Destroy(icon);
+            characterIcons.Clear();
+        }
+
         if (turnQueue.Count > 0)
         {
             for (int i = 0; i < turnQueue.Count; i++)

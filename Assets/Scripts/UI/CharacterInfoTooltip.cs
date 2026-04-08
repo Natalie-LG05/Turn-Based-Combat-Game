@@ -9,9 +9,6 @@ public class CharacterInfoTooltip : Tooltip
     [SerializeField] private GameObject AbilityInfoUIPrefab;
     [SerializeField] private GameObject EffectInfoUIPrefab;
 
-    [SerializeField] private float scrollSpeed;
-    [SerializeField] private ScrollRect scrollRect;
-
     private CharacterInstance character;
 
     [SerializeField] private TextMeshProUGUI nameText;
@@ -27,15 +24,6 @@ public class CharacterInfoTooltip : Tooltip
         base.Awake();
         abilityInfoUIs = new List<GameObject>();
         effectInfoUIs = new List<GameObject>();
-    }
-
-    private void Update()
-    {
-        float scrollInputY = Mouse.current.scroll.ReadValue().y;
-        if (scrollInputY != 0)
-        {
-            scrollRect.verticalNormalizedPosition += scrollInputY * scrollSpeed;
-        }
     }
 
     public override void SetTooltipData(GameObject sourceObject)
@@ -93,6 +81,8 @@ public class CharacterInfoTooltip : Tooltip
 
     private void NewEffectInfo(StatusEffectInstance effect)
     {
-
+        GameObject effectInfo = Instantiate(EffectInfoUIPrefab, InfoContainer);
+        effectInfoUIs.Add(effectInfo);
+        effectInfo.GetComponent<EffectInfoUI>().Effect = effect;
     }
 }

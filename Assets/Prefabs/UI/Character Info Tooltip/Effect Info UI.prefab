@@ -226,6 +226,7 @@ GameObject:
   m_Component:
   - component: {fileID: 8816127706108713961}
   - component: {fileID: 1191606812303265273}
+  - component: {fileID: 1040909332993950545}
   m_Layer: 5
   m_Name: Effect Info UI
   m_TagString: Untagged
@@ -280,6 +281,21 @@ MonoBehaviour:
   m_ChildScaleWidth: 0
   m_ChildScaleHeight: 0
   m_ReverseArrangement: 0
+--- !u!114 &1040909332993950545
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5792533642725915849}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 97e0220a2d6d071419828d6367eaa8c3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: '::'
+  nameText: {fileID: 6358820580736010949}
+  durationText: {fileID: 36249292068677387}
+  descriptionText: {fileID: 4546484529264308459}
 --- !u!1 &7078832010304792324
 GameObject:
   m_ObjectHideFlags: 0

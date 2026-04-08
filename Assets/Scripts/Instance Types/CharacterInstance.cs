@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -8,9 +9,15 @@ public class CharacterInstance
     protected CharacterData _characterData;
     protected CharacterUI _characterUI;
 
+    protected static int instanceCount;
+
     [SerializeField, Min(1)] protected int _level;
 
+    protected bool _isPlayerTeam;
+
     protected int totalStatPoints;
+    protected int additionalStatPoints;
+
     protected int _currentHP;
 
     public CharacterData CharacterData { get => _characterData; }
@@ -18,14 +25,19 @@ public class CharacterInstance
 
     public int Level { get => _level; }
 
+    public bool IsPlayerTeam { get => _isPlayerTeam; set => _isPlayerTeam = value; }
+
     public int CurrentHP { get => _currentHP; }
 
     public float SpeedTieBreaker { get => Random.value; }
+
+    public int uniqueCharacterId { get; private set; }
 
     public List<StatusEffectInstance> StatusEffects { get; private set; }
 
     public Dictionary<Stat, int> Stats { get; private set; }
     public Dictionary<Stat, List<float>> StatModifiers { get; private set; }
+    public Dictionary<Stat, int> AdditionalStats { get; private set; }
 
     public int MaxHP { get { return GetStat(Stat.MaxHP); } }
     public int Attack { get { return GetStat(Stat.Attack); } }
@@ -38,14 +50,20 @@ public class CharacterInstance
 
     public virtual void Init()
     {
+        InitializeAdditionalStats();
+
+
         CalculateTotalStatPoints();
         CalculateStartingStats();
         ResetStatModifiers();
         ResetStatusEffects();
+
         _currentHP = MaxHP;
 
         DetermineMoveset();
         DetermineAbilities();
+
+        uniqueCharacterId = instanceCount++;
     }
 
     public void BattleStart()
@@ -53,10 +71,36 @@ public class CharacterInstance
         _currentHP = MaxHP;
     }
 
-    public void ApplyStatusEffect(StatusEffectInstance effect)
+    public IEnumerator TakeAttackDamage(CharacterInstance user, MoveData move, MoveDamageEffect effect)
+    {
+        int damage = Mathf.RoundToInt((effect.Power / 5f) * ((user.Level / 10f) + 1) * ((float)user.Attack / user.Defense)) + 1;
+
+        int newHP = _currentHP - damage;
+        yield return SetHP(newHP, true);
+    }
+
+    public void AddStatusEffect(StatusEffectInstance effect)
     {
         StatusEffects.Add(effect);
-        CharacterUI.AddStatusEffect(effect);
+        CharacterUI.SetEffects(StatusEffects);
+    }
+
+    protected IEnumerator SetHP(int hp, bool smooth)
+    {
+        _currentHP = hp >= 0 ? hp : 0;
+
+        if (!smooth) CharacterUI.UpdateHealth();
+        else yield return CharacterUI.UpdateHealthSmooth();
+    }
+
+    protected void InitializeAdditionalStats()
+    {
+        AdditionalStats = new Dictionary<Stat, int>();
+        AdditionalStats.Add(Stat.MaxHP, 0);
+        AdditionalStats.Add(Stat.Attack, 0);
+        AdditionalStats.Add(Stat.Support, 0);
+        AdditionalStats.Add(Stat.Defense, 0);
+        AdditionalStats.Add(Stat.Speed, 0);
     }
 
     protected void CalculateStartingStats()
@@ -124,12 +168,6 @@ public class CharacterInstance
                 Abilities.Add(mlp.AbilityData);
             }
         }
-    }
-
-    public void AddStatusEffect(StatusEffectInstance effect)
-    {
-        StatusEffects.Add(effect);
-        CharacterUI.AddStatusEffect(effect);
     }
 }
 

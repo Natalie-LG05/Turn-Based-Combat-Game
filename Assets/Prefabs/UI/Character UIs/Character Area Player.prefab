@@ -759,7 +759,7 @@ MonoBehaviour:
   m_Direction: 0
   m_MinValue: 0
   m_MaxValue: 20
-  m_WholeNumbers: 1
+  m_WholeNumbers: 0
   m_Value: 13
   m_OnValueChanged:
     m_PersistentCalls:
@@ -953,6 +953,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: '::'
   effectIconPrefab: {fileID: 3167059281327309655, guid: 0b7af63f2081b934798735006b865623, type: 3}
+  effectListIconPrefab: {fileID: 3167059281327309655, guid: c818a9978a233f840a340d3b118c46a4, type: 3}
   characterSprite: {fileID: 5360126045853409049}
   nameText: {fileID: 6291288252470791602}
   levelText: {fileID: 4289756586947336500}

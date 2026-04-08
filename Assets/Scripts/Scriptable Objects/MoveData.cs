@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 [CreateAssetMenu(fileName = "NewMoveData", menuName = "ScriptableObjects/Move Data", order = -1000)]
@@ -9,10 +10,32 @@ public class MoveData : ScriptableObject
 
     [SerializeField] protected MoveType _type;
     [SerializeField] protected MoveElement _element;
-    [SerializeField] protected MoveCategory[] _categories;
+    [SerializeField] protected List<MoveCategory> _categories;
 
-    [SerializeField] protected MoveDamageEffect[] _damageEffects;
-    [SerializeField] protected MoveStatusEffect[] _statusEffects;
+    [SerializeField] protected List<MoveDamageEffect> _damageEffects;
+    [SerializeField] protected List<MoveStatusEffect> _statusEffects;
+
+    public string Name { get => _name; }
+    public string Id { get => _id; }
+    public string Description { get => _description; } 
+
+    public MoveType Type { get => _type; }
+    public MoveElement Element { get => _element; }
+    public List<MoveCategory> Categories { get => _categories; }
+
+    public List<MoveDamageEffect> DamageEffects { get => _damageEffects; }
+    public List<MoveStatusEffect> StatusEffects { get => _statusEffects; }
+
+    public List<MoveTarget> Targets
+    {
+        get
+        {
+            List<MoveTarget> targets = new List<MoveTarget>();
+            foreach (MoveDamageEffect effect in _damageEffects) targets.Add(effect.Targets);
+            foreach (MoveStatusEffect effect in _statusEffects) targets.Add(effect.Targets);
+            return targets;
+        }
+    }
 }
 
 public enum MoveType { MeleePhysical, MeleeEnhanced, RangedPhysical, RangedEnhanced, Spell }

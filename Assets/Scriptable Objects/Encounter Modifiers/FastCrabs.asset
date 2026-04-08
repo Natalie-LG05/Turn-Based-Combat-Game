@@ -15,5 +15,6 @@ MonoBehaviour:
   _name: Fast Crabs
   _id: fast_crabs
   _description: All crabs get +15% Speed.
-  _iconColor: {r: 0.81886786, g: 0.35072264, b: 0.35072264, a: 1}
-  _effects: []
+  _iconColor: {r: 0.94716984, g: 0.42712, b: 0.42712, a: 1}
+  _effects:
+  - {fileID: 11400000, guid: 4327a1fc1aa9e9d4095f470dc31cfc50, type: 2}

@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
@@ -6,6 +7,7 @@ using UnityEngine.UI;
 public class CharacterUI : MonoBehaviour
 {
     [SerializeField] private GameObject effectIconPrefab;
+    [SerializeField] private GameObject effectListIconPrefab;
 
     public CharacterInstance Character {  get; private set; }
     
@@ -19,12 +21,14 @@ public class CharacterUI : MonoBehaviour
 
     [SerializeField] private Transform effectIconContainer;
     private List<GameObject> effectIcons;
+    private List<StatusEffectInstance> effects;
 
     [SerializeField] private Hoverable characterPlate;
 
     private void Awake()
     {
         effectIcons = new List<GameObject>();
+        effects = new List<StatusEffectInstance>();
     }
 
     public void SetCharacter(CharacterInstance characterInstance)
@@ -38,9 +42,32 @@ public class CharacterUI : MonoBehaviour
         SetEffectIcons(Character.StatusEffects);
     }
 
-    public void AddStatusEffect(StatusEffectInstance effect)
+    public void UpdateHealth()
     {
-        NewEffectIcon(effect);
+        SetHealthUI(Character.CurrentHP, Character.MaxHP);
+    }
+
+    public IEnumerator UpdateHealthSmooth()
+    {
+        float curHPVal = healthBar.value;
+        int newHP = Character.CurrentHP;
+        int maxHP = Character.MaxHP;
+
+        float changeAmt = curHPVal - newHP;
+        while (curHPVal - newHP > Mathf.Epsilon)
+        {
+            curHPVal -= changeAmt * Time.deltaTime;
+            SetHealthBar(curHPVal, maxHP);
+            yield return null;
+        }
+
+        SetHealthBar(newHP, maxHP);
+        SetHealthText(newHP, maxHP);
+    }
+
+    public void SetEffects(List<StatusEffectInstance> effectInstances)
+    {
+        SetEffectIcons(effectInstances);
     }
 
     public void UpdateCurrentTurn(bool isTurn)
@@ -75,7 +102,7 @@ public class CharacterUI : MonoBehaviour
         healthText.text = $"{currentHP}/{maxHP}";
     }
 
-    private void SetHealthBar(int currentHP, int maxHP)
+    private void SetHealthBar(float currentHP, int maxHP)
     {
         healthBar.maxValue = maxHP;
         healthBar.value = currentHP;
@@ -92,8 +119,12 @@ public class CharacterUI : MonoBehaviour
         // Delete current effect icons (if any)
         if (effectIcons.Count > 0)
         {
-            effectIcons.RemoveRange(0, effectIcons.Count);
+            foreach (GameObject obj in effectIcons)
+                Destroy(obj);
+            effectIcons.Clear();
         }
+        if (effects.Count > 0)
+            effects.Clear();
         
         if (statusEffects.Count > 0)
         {
@@ -106,8 +137,35 @@ public class CharacterUI : MonoBehaviour
 
     private void NewEffectIcon(StatusEffectInstance effect)
     {
-        GameObject icon = Instantiate(effectIconPrefab, effectIconContainer);
-        effectIcons.Add(icon);
-        icon.GetComponent<StatusEffectIcon>().StatusEffect = effect;
+        if (effects.Count < 5)
+        {
+            GameObject icon = Instantiate(effectIconPrefab, effectIconContainer);
+            effectIcons.Add(icon);
+            effects.Add(effect);
+            icon.GetComponent<StatusEffectIcon>().StatusEffect = effect;
+        } else
+        {
+            // If the 6th effect is being added, swap the 5th icon with the +1 icon
+            if (effects.Count == 5)
+            {
+                // Remove the icon for the 5th effect
+                GameObject oldIcon = effectIcons[4];
+                effectIcons.Remove(oldIcon);
+                Destroy(oldIcon);
+
+                // Add the +1 icon
+                GameObject newIcon = Instantiate(effectListIconPrefab, effectIconContainer);
+
+                // Add the new effect to the list, and put all effects after the fourth into the +1 icon
+                effects.Add(effect);
+                effectIcons.Add(newIcon);
+                newIcon.GetComponent<StatusEffectListIcon>().Effects = effects.GetRange(4, effects.Count - 4);
+            } else
+            {
+                // There are already 6+ effects, so there should already be a +1 icon, so just update the effects shown by its tooltip
+                effects.Add(effect);
+                effectIcons[4].GetComponent<StatusEffectListIcon>().Effects = effects.GetRange(4, effects.Count - 4);
+            }
+        }
     }
 }

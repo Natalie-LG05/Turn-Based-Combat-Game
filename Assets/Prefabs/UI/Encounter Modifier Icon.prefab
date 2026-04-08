@@ -129,3 +129,4 @@ MonoBehaviour:
   selectedColorMultiplier: 0.75
   hoverColorMultiplier: 1.25
   tooltipName: Modifier Info Tooltip
+  tooltipShowDelay: 0.5
