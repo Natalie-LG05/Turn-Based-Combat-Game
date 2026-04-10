@@ -16,6 +16,6 @@ public class EffectInfoTooltip : Tooltip
 
         nameText.text = effect.StatusEffectData.Name;
         durationText.text = $"{(effect.StatusEffectData.IsPermanent ? "-" : effect.Duration)} Turns";
-        descriptionText.text = effect.StatusEffectData.Description;
+        descriptionText.text = effect.StatusEffectData.Description.Replace("{x}", effect.Power.ToString());
     }
 }

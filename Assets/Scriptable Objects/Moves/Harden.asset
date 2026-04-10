@@ -18,12 +18,15 @@ MonoBehaviour:
   _type: 4
   _element: 0
   _categories: 01000000
+  _power: 20
+  _accuracy: 100
+  _target: 4
   _damageEffects: []
   _statusEffects:
-  - _targets: 2
+  - _targets: 4
     _accuracy: 100
-    _power: 50
+    _power: 15
     _element: 0
     _duration: 3
-    statusEffects:
+    _statusEffects:
     - {fileID: 11400000, guid: d8094c9573cbdd7499d12920119cf6a7, type: 2}

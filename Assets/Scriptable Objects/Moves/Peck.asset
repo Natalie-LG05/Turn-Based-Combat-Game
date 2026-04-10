@@ -18,6 +18,9 @@ MonoBehaviour:
   _type: 0
   _element: 0
   _categories: 00000000
+  _power: 30
+  _hits: 1
+  _accuracy: 100
   _damageEffects:
   - _targets: 0
     _accuracy: 100

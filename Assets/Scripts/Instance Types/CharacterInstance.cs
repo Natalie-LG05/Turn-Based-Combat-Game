@@ -71,15 +71,75 @@ public class CharacterInstance
         _currentHP = MaxHP;
     }
 
+    public void TurnStart()
+    {
+        foreach (StatusEffectInstance effect in StatusEffects)
+            effect.TurnStart();
+    }
+
+    public void TurnEnd()
+    {
+        // Decrease duration of status effects and update the UI accordingly
+        List<StatusEffectInstance> expiredEffects = new List<StatusEffectInstance>();
+        foreach (StatusEffectInstance effect in StatusEffects)
+        {
+            if (effect.TurnEnd()) expiredEffects.Add(effect);
+        }
+        foreach (StatusEffectInstance effect in expiredEffects)
+        {
+            StatusEffects.Remove(effect);
+        }
+
+        _characterUI.SetEffects(StatusEffects);
+    }
+
     public IEnumerator TakeAttackDamage(CharacterInstance user, MoveData move, MoveDamageEffect effect)
     {
-        int damage = Mathf.RoundToInt((effect.Power / 5f) * ((user.Level / 10f) + 1) * ((float)user.Attack / user.Defense)) + 1;
+        int damage = Mathf.RoundToInt((effect.Power / 5f) * (((user.Level - 1) / 5f) + 1) * ((float)user.Attack / Defense)) + 1;
 
         int newHP = _currentHP - damage;
         yield return SetHP(newHP, true);
     }
 
+    public void ApplyMoveStatusEffect(CharacterInstance user, MoveData move, MoveStatusEffect effect)
+    {
+        float power = effect.Power * (1 + (user.Support / 100f));
+        int duration = Mathf.FloorToInt(effect.Duration * (1 + (user.Support / 100f)));
+
+        foreach (StatusEffectData status in effect.StatusEffects)
+        {
+            AddStatusEffect(new StatusEffectInstance(status, duration, power));
+
+            string message = status.Type == StatusEffectType.Debuff ? $"{CharacterData.Name} (lvl {Level}) was inflicted with {status.Name}." : $"{CharacterData.Name} (lvl {Level}) gained {status.Name}.";
+            BattleManager.Instance.QueueMessage(message);
+        }
+    }
+
     public void AddStatusEffect(StatusEffectInstance effect)
+    {
+        StatusEffectInstance oldEffect = StatusEffects.Find(status => status.StatusEffectData.Id == effect.StatusEffectData.Id);
+        if (oldEffect != null)
+        {
+            if (oldEffect.Power < effect.Power)
+            {
+                // If this character already has this status effect, but the old one is weaker, replace it with the new one
+                StatusEffects.Remove(oldEffect);
+
+                UpdateStatusEffects(effect);
+            } else if (oldEffect.Power == effect.Power || oldEffect.Duration < effect.Duration)
+            {
+                // If this character already has this status effect of the same power, but the old one has less duration, replace it with the new one
+                StatusEffects.Remove(oldEffect);
+
+                UpdateStatusEffects(effect);
+            }
+        } else
+        {
+            UpdateStatusEffects(effect);
+        }
+    }
+
+    protected void UpdateStatusEffects(StatusEffectInstance effect)
     {
         StatusEffects.Add(effect);
         CharacterUI.SetEffects(StatusEffects);

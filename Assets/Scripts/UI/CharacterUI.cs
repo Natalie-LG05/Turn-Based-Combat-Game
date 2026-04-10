@@ -40,6 +40,7 @@ public class CharacterUI : MonoBehaviour
         SetLevelText(Character.Level);
         SetHealthUI(Character.CurrentHP, Character.MaxHP);
         SetEffectIcons(Character.StatusEffects);
+        characterPlate.gameObject.GetComponent<CharacterPlate>().Character = Character;
     }
 
     public void UpdateHealth()

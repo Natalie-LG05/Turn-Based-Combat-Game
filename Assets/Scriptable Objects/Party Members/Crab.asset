@@ -14,7 +14,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PartyMemberData
   _name: Crab
   _id: crab
-  _description: "Your first party member! It\u2019s a really strong crab\u2026"
+  _description: Your first party member! It's a crab! Crabs are common creatures
+    found in the ocean and on beaches! Crabs are the peak form of evolution, all
+    creatures eventually become crabs!
   _sprite: {fileID: 2104901783972924173, guid: 6d292cba59e72bd47b75dd8b68757397, type: 3}
   categories: 00000000
   _baseStatPoints: 75
@@ -28,7 +30,11 @@ MonoBehaviour:
   _moveLearnset:
   - _moveData: {fileID: 11400000, guid: c0183c9c14cb7a2419ffe4e89cfd8882, type: 2}
     _level: 0
+  - _moveData: {fileID: 11400000, guid: b4bfa69b34dfa1a4592df61f8708c9c6, type: 2}
+    _level: 0
   - _moveData: {fileID: 11400000, guid: 0b8501ffd83419a4cb135526f8460e53, type: 2}
+    _level: 5
+  - _moveData: {fileID: 11400000, guid: c78128d7ad2598a439d012c8791e004c, type: 2}
     _level: 5
   _abilityLearnset:
   - _abilityData: {fileID: 11400000, guid: 14c4573371e5a6e4cba439aa1db454f4, type: 2}

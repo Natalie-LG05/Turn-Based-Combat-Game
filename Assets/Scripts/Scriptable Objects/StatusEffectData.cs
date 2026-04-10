@@ -1,11 +1,14 @@
 using UnityEngine;
 
+public enum StatusEffectType { Buff, Debuff, Other }
+
 [CreateAssetMenu(fileName = "NewStatusEffectData", menuName = "ScriptableObjects/Status Effect Data", order = -1000)]
 public class StatusEffectData : ScriptableObject
 {
     [SerializeField] private string _name;
     [SerializeField] private string _id;
     [SerializeField, TextArea] private string _description;
+    [SerializeField] private StatusEffectType _type;
 
     [SerializeField] private Color _iconColor;
 
@@ -14,6 +17,7 @@ public class StatusEffectData : ScriptableObject
     public string Name { get => _name; }
     public string Id { get => _id; }
     public string Description { get => _description; }
+    public StatusEffectType Type { get => _type; }
 
     public Color IconColor { get => _iconColor; }
 

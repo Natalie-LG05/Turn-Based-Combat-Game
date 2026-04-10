@@ -30,7 +30,7 @@ MonoBehaviour:
   - _moveData: {fileID: 11400000, guid: 11827fca9dde23d43889979d48b6d355, type: 2}
     _level: 0
   - _moveData: {fileID: 11400000, guid: 87601bc30b06e3343a73c2d1baac1f5c, type: 2}
-    _level: 0
+    _level: 5
   _abilityLearnset:
   - _abilityData: {fileID: 11400000, guid: 0a8ff3ad46da9f4478aa3e630125097f, type: 2}
     _level: 10

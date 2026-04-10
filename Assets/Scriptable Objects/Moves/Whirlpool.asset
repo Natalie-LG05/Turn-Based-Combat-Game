@@ -10,28 +10,30 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 05c5dc6b49e6d7f4b9dcbbca7127ff27, type: 3}
-  m_Name: TrapClaw
+  m_Name: Whirlpool
   m_EditorClassIdentifier: Assembly-CSharp::MoveData
-  _name: Trap Claw
-  _id: trap_claw
-  _description: Pinch the target with extreme force, inflicting speed down.
-  _type: 0
-  _element: 0
+  _name: Whirlpool
+  _id: whirlpool
+  _description: Summon the power of the abyss, engulfing an entire team in a powerful
+    vortex while slowing down the other. Inflicts high damage on the selected team
+    and Speed Down on the other.
+  _type: 4
+  _element: 3
   _categories: 0000000002000000
-  _power: 20
+  _power: 100
   _accuracy: 100
-  _target: 0
+  _target: 7
   _damageEffects:
-  - _targets: 0
+  - _targets: 7
     _accuracy: 100
     _power: 20
-    _element: 0
-    _hits: 1
+    _element: 3
+    _hits: 5
   _statusEffects:
-  - _targets: 0
-    _accuracy: 70
-    _power: 15
-    _element: 0
-    _duration: 3
+  - _targets: 8
+    _accuracy: 100
+    _power: 75
+    _element: 3
+    _duration: 5
     _statusEffects:
-    - {fileID: 11400000, guid: 115e12c5546c95648b92742f198abe75, type: 2}
+    - {fileID: 11400000, guid: 7dfc4b29152b56848a3577c6854d44c2, type: 2}

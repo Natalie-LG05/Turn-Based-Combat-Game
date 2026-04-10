@@ -10,11 +10,11 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 047bb2080ba1929449b3752c6d09c113, type: 3}
-  m_Name: SpeedDown
+  m_Name: Whirlpool
   m_EditorClassIdentifier: Assembly-CSharp::StatusEffectData
-  _name: Speed Down
-  _id: speed_down
+  _name: Whirlpool
+  _id: whirlpool
   _description: Speed is decreased by {x}%.
   _type: 1
-  _iconColor: {r: 1, g: 1, b: 1, a: 1}
+  _iconColor: {r: 0.10539693, g: 0.12216551, b: 0.4264151, a: 1}
   _isPermanent: 0

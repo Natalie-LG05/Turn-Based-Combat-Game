@@ -2,8 +2,10 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.InputSystem;
+using static UnityEngine.GraphicsBuffer;
 
-public enum BattleState { Setup, ActionSelection, MoveSelection, PartyScreen, EnemyTurn, PerformMove, Busy }
+public enum BattleState { Setup, ActionSelection, MoveSelection, TargetSelection, PartyScreen, EnemyTurn, PerformMove, Busy }
 
 public class BattleManager : MonoBehaviour
 {
@@ -12,6 +14,7 @@ public class BattleManager : MonoBehaviour
 
     public static BattleManager Instance { get; private set; }
     private BattleState state;
+    public CharacterInstance CurrentCharacter { get { return turnQueue.Peek(); } }
 
     private List<PartyMemberInstance> playerTeam;
     private List<EnemyInstance> enemyTeam;
@@ -22,14 +25,23 @@ public class BattleManager : MonoBehaviour
     [SerializeField] private TeamUI playerTeamUI;
     [SerializeField] private TeamUI enemyTeamUI;
 
-    [SerializeField] private BattleDialogueBox dialogueBox;
     [SerializeField] private EncounterInfoUI encounterInfoUI;
     [SerializeField] private TurnOrderUI turnOrderUI;
 
-    [SerializeField] StatusEffectData testEffect;
-
     private EncounterManager encounterManager;
     private PartyManager partyManager;
+
+    private BattleDialogueBox dialogueBox;
+    private Queue<string> dialogueQueue;
+    private MoveSelectionUI moveSelectionUI;
+
+    [SerializeField] private GameObject dialogueBoxGO;
+    [SerializeField] private GameObject actionSelectionButtons;
+    [SerializeField] private GameObject moveSelectionUIGO;
+    [SerializeField] private GameObject moveInfoUIGO;
+    [SerializeField] private GameObject PartyMemberSelectionUIGO;
+
+    private MoveData selectedMove;
 
     // Unity game object methods
     private void Awake()
@@ -38,6 +50,10 @@ public class BattleManager : MonoBehaviour
         enemyTeam = new List<EnemyInstance>();
         characters = new List<CharacterInstance>();
         turnQueue = new Queue<CharacterInstance>();
+
+        dialogueBox = dialogueBoxGO.GetComponent<BattleDialogueBox>();
+        dialogueQueue = new Queue<string>();
+        moveSelectionUI = moveSelectionUIGO.GetComponent<MoveSelectionUI>();
 
         Instance = this;
     }
@@ -50,12 +66,89 @@ public class BattleManager : MonoBehaviour
         SetupBattle();
     }
 
+    private void Update()
+    {
+        switch (state)
+        {
+            case BattleState.TargetSelection:
+                if (Keyboard.current.escapeKey.wasPressedThisFrame)
+                {
+                    ShowMoveSelectionScreen();
+                    state = BattleState.MoveSelection;
+                }
+                break;
+            case BattleState.MoveSelection or BattleState.PartyScreen:
+                if (Keyboard.current.escapeKey.wasPressedThisFrame)
+                {
+                    BackButtonClicked();
+                    state = BattleState.ActionSelection;
+                }
+                break;
+        }
+    }
+
+    // public methods for use in other scripts
+    public void QueueMessage(string message)
+    {
+        dialogueQueue.Enqueue(message);
+    }
+
+    // public methods for buttons to call
     public void MoveButtonClicked()
     {
         if (state == BattleState.ActionSelection)
         {
-            StartCoroutine(PlayerMove());
+            ShowMoveSelectionScreen();
+
+            state = BattleState.MoveSelection;
+
+            moveSelectionUI.SetCharacter(CurrentCharacter);
         }
+    }
+
+    public void MoveOptionClicked(MoveData move)
+    {
+        if (state == BattleState.MoveSelection )
+        {
+            if (move.Target is MoveTarget.User or MoveTarget.UserTeam or MoveTarget.EnemyTeam or MoveTarget.All or MoveTarget.AllOther)
+                StartCoroutine(PlayerMove(move, CurrentCharacter));
+            else
+            {
+                selectedMove = move;
+                state = BattleState.TargetSelection;
+                ShowActionSelectionScreen();
+                dialogueBox.SetDialogue("Select a target character (AOE moves will target that entire team). Press escape to cancel.");
+            }
+        }
+    }
+
+    public void TargetOptionClicked(CharacterInstance target)
+    {
+        if (state == BattleState.TargetSelection)
+        {
+            List<CharacterInstance> validTargets = new List<CharacterInstance>();
+            if (selectedMove.Target == MoveTarget.SingleOther)
+                validTargets = characters.Where(chr => chr != CurrentCharacter).ToList();
+            else if (selectedMove.Target == MoveTarget.SingleEnemy)
+                validTargets = enemyTeam.ConvertAll(chr => (CharacterInstance)chr);
+            else if (selectedMove.Target == MoveTarget.SingleAlly)
+                validTargets = playerTeam.ConvertAll(chr => (CharacterInstance)chr);
+            else if (selectedMove.Target == MoveTarget.SingleAny || selectedMove.Target == MoveTarget.AnyTeam || selectedMove.Target == MoveTarget.OppositeTeam)
+                validTargets = characters;
+
+            if (validTargets.Contains(target))
+                StartCoroutine(PlayerMove(selectedMove, target));
+        }
+    }
+
+    public void BackButtonClicked()
+    {
+        if (state == BattleState.MoveSelection || state == BattleState.PartyScreen)
+        {
+            ShowActionSelectionScreen();
+            state = BattleState.ActionSelection;
+            dialogueBox.SetDialogue($"It is {CurrentCharacter.CharacterData.Name}'s turn, choose an action.");
+        }  
     }
 
     // Main logic methods
@@ -132,19 +225,19 @@ public class BattleManager : MonoBehaviour
         // Check if there are more characters in the turn queue
         if (turnQueue.Count > 0)
         {
-            CharacterInstance currentCharacter = turnQueue.Peek();
-
             // highlight the character who's turn it is
             foreach (CharacterInstance character in characters)
-                character.CharacterUI.UpdateCurrentTurn(character == currentCharacter);
+                character.CharacterUI.UpdateCurrentTurn(character == CurrentCharacter);
 
-            if (currentCharacter.IsPlayerTeam)
+            CurrentCharacter.TurnStart();
+
+            if (CurrentCharacter.IsPlayerTeam)
             {
                 state = BattleState.ActionSelection;
-                dialogueBox.SetDialogue($"It is {currentCharacter.CharacterData.Name}'s turn, choose an action.");
+                dialogueBox.SetDialogue($"It is {CurrentCharacter.CharacterData.Name}'s turn, choose an action.");
             } else
             {
-                StartCoroutine(EnemyTurn(currentCharacter));
+                StartCoroutine(EnemyTurn(CurrentCharacter));
             }
         } else
         {
@@ -154,11 +247,10 @@ public class BattleManager : MonoBehaviour
         }
     }
 
-    private IEnumerator PlayerMove()
+    private IEnumerator PlayerMove(MoveData move, CharacterInstance target)
     {
-        state = BattleState.Busy;
-        CharacterInstance currentCharacter = turnQueue.Peek();
-        yield return UseMove(currentCharacter, enemyTeam[Random.Range(0, enemyTeam.Count)], currentCharacter.Moveset[0]);
+        ShowActionSelectionScreen();
+        yield return UseMove(CurrentCharacter, target, move);
         EndTurn();
     }
 
@@ -174,23 +266,41 @@ public class BattleManager : MonoBehaviour
         BattleState prevState = state;
         state = BattleState.PerformMove;
 
-        yield return dialogueBox.TypeDialogue($"{user.CharacterData.Name} used {move.Name}.");
-
-        List<CharacterInstance> targets = new List<CharacterInstance>();
+        yield return dialogueBox.TypeDialogue($"{user.CharacterData.Name} (lvl {user.Level}) used {move.Name}.");
 
         foreach (MoveDamageEffect effect in move.DamageEffects)
         {
-            targets.Add(target);
-            foreach (CharacterInstance character in targets)
+            foreach (CharacterInstance character in GetEffectTargets(effect.Targets, CurrentCharacter, target))
             {
-                yield return character.TakeAttackDamage(user, move, effect);
+                bool hit = Random.Range(1, 101) <= effect.Accuracy;
+
+                if (hit)
+                {
+                    for (int i = 0; i < effect.Hits; i++)
+                        yield return character.TakeAttackDamage(user, move, effect);
+                } else
+                {
+                    yield return dialogueBox.TypeDialogue($"{user.CharacterData.Name} (lvl {user.Level}) missed!");
+                }
             }
         }
 
         foreach (MoveStatusEffect effect in move.StatusEffects)
         {
-            // apply statuses
+            foreach (CharacterInstance character in GetEffectTargets(effect.Targets, CurrentCharacter, target))
+            {
+                bool hit = Random.Range(1, 101) <= effect.Accuracy;
+
+                if (hit)
+                {
+                    character.ApplyMoveStatusEffect(CurrentCharacter, move, effect);
+                } else
+                {
+                    yield return dialogueBox.TypeDialogue($"{user.CharacterData.Name} (lvl {user.Level}) missed!");
+                }
+            }
         }
+        yield return ShowQueuedDialogue();
 
         state = prevState;
     }
@@ -203,6 +313,8 @@ public class BattleManager : MonoBehaviour
         }
         else
         {
+            CurrentCharacter.TurnEnd();
+
             turnQueue.Dequeue();
             turnOrderUI.NextTurn();
             StartNextTurn();
@@ -210,7 +322,59 @@ public class BattleManager : MonoBehaviour
     }
 
     // Helper methods
+    private IEnumerator ShowQueuedDialogue()
+    {
+        foreach (string msg in dialogueQueue)
+            yield return dialogueBox.TypeDialogue(msg);
+        dialogueQueue.Clear();
+    }
 
+
+    private List<CharacterInstance> GetEffectTargets(MoveTarget targetType, CharacterInstance user, CharacterInstance target)
+    {
+        List<CharacterInstance> targets = new List<CharacterInstance>();
+        switch (targetType)
+        {
+            case MoveTarget.SingleOther or MoveTarget.SingleAlly or MoveTarget.SingleEnemy or MoveTarget.SingleAny:
+                targets.Add(target);
+                break;
+            case MoveTarget.User:
+                targets.Add(user);
+                break;
+            case MoveTarget.UserTeam:
+                if (user.IsPlayerTeam)
+                    targets = playerTeam.ConvertAll(chr => (CharacterInstance)chr);
+                else
+                    targets = enemyTeam.ConvertAll(chr => (CharacterInstance)chr);
+                break;
+            case MoveTarget.EnemyTeam:
+                if (user.IsPlayerTeam)
+                    targets = enemyTeam.ConvertAll(chr => (CharacterInstance)chr);
+                else
+                    targets = playerTeam.ConvertAll(chr => (CharacterInstance)chr);
+                break;
+            case MoveTarget.AnyTeam:
+                if (target.IsPlayerTeam)
+                    targets = playerTeam.ConvertAll(chr => (CharacterInstance)chr);
+                else
+                    targets = enemyTeam.ConvertAll(chr => (CharacterInstance)chr);
+                break;
+            case MoveTarget.OppositeTeam:
+                if (target.IsPlayerTeam)
+                    targets = enemyTeam.ConvertAll(chr => (CharacterInstance)chr);
+                else
+                    targets = playerTeam.ConvertAll(chr => (CharacterInstance)chr);
+                break;
+            case MoveTarget.AllOther:
+                targets = characters.Where(chr => chr != user).ToList();
+                break;
+            case MoveTarget.All:
+                targets = characters;
+                break;
+        }
+        return targets;
+    }
+    
     private void DetermineTurnOrder()
     {
         CharacterInstance[] characterInstances = new CharacterInstance[characters.Count];
@@ -260,6 +424,29 @@ public class BattleManager : MonoBehaviour
             enemyTeam.RemoveAll(chr => chr.uniqueCharacterId == character.uniqueCharacterId);
             enemyTeamUI.RemoveCharacter(character);
         }
+    }
+
+    private void ShowActionSelectionScreen()
+    {
+        if (state == BattleState.MoveSelection || state == BattleState.TargetSelection)
+        {
+            moveSelectionUIGO.SetActive(false);
+            moveInfoUIGO.SetActive(false);
+            dialogueBoxGO.SetActive(true);
+            actionSelectionButtons.SetActive(true);
+        }
+        else if (state == BattleState.PartyScreen)
+        {
+
+        }
+    }
+
+    private void ShowMoveSelectionScreen()
+    {
+        dialogueBoxGO.SetActive(false);
+        actionSelectionButtons.SetActive(false);
+        moveSelectionUIGO.SetActive(true);
+        moveInfoUIGO.SetActive(true);
     }
 
     private void AddActivePartyMember(PartyMemberInstance partyMember)
