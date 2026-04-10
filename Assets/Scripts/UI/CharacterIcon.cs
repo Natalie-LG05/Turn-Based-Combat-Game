@@ -24,7 +24,7 @@ public class CharacterIcon : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
 
     public void OnPointerEnter(PointerEventData eventData)
     {
-        _character.CharacterUI.HighlightCharacterPlate(true);
+        if (_character.CharacterUI != null) _character.CharacterUI.HighlightCharacterPlate(true);
     }
 
     public void OnPointerExit(PointerEventData eventData)
@@ -34,6 +34,6 @@ public class CharacterIcon : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
 
     public void DeselectCharacter()
     {
-        _character.CharacterUI.HighlightCharacterPlate(false);
+        if (_character.CharacterUI != null) _character.CharacterUI.HighlightCharacterPlate(false);
     }
 }

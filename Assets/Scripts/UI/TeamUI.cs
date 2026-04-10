@@ -17,10 +17,9 @@ public class TeamUI : MonoBehaviour
     public void SetTeam(List<CharacterInstance> characters)
     {
         // Delete characters (if any)
-        if (characterUIs.Count > 0)
-        {
-            characterUIs.RemoveRange(0, characterUIs.Count);
-        }
+        foreach (GameObject characterUI in characterUIs)
+            Destroy(characterUI);
+        characterUIs.Clear();
 
         if (characters.Count > 0)
         {

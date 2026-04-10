@@ -1,11 +1,11 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEditor.Rendering.LookDev;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using static UnityEngine.GraphicsBuffer;
 
-public enum BattleState { Setup, ActionSelection, MoveSelection, TargetSelection, PartyScreen, EnemyTurn, PerformMove, Busy }
+public enum BattleState { Setup, ActionSelection, MoveSelection, TargetSelection, PartyScreen, ReplaceDeadPartyMember, EnemyTurn, PerformMove, RoundEnd, Busy }
 
 public class BattleManager : MonoBehaviour
 {
@@ -15,6 +15,8 @@ public class BattleManager : MonoBehaviour
     public static BattleManager Instance { get; private set; }
     private BattleState state;
     public CharacterInstance CurrentCharacter { get { return turnQueue.Peek(); } }
+
+    private List<PartyMemberInstance> party;
 
     private List<PartyMemberInstance> playerTeam;
     private List<EnemyInstance> enemyTeam;
@@ -34,18 +36,22 @@ public class BattleManager : MonoBehaviour
     private BattleDialogueBox dialogueBox;
     private Queue<string> dialogueQueue;
     private MoveSelectionUI moveSelectionUI;
+    private PartyMemberSelectionUI partyMemberSelectionUI;
 
     [SerializeField] private GameObject dialogueBoxGO;
     [SerializeField] private GameObject actionSelectionButtons;
     [SerializeField] private GameObject moveSelectionUIGO;
     [SerializeField] private GameObject moveInfoUIGO;
-    [SerializeField] private GameObject PartyMemberSelectionUIGO;
+    [SerializeField] private GameObject partyMemberSelectionUIGO;
 
     private MoveData selectedMove;
+    private bool partyMemberDiedThisTurn;
 
     // Unity game object methods
     private void Awake()
     {
+        party = new List<PartyMemberInstance>();
+
         playerTeam = new List<PartyMemberInstance>();
         enemyTeam = new List<EnemyInstance>();
         characters = new List<CharacterInstance>();
@@ -54,6 +60,7 @@ public class BattleManager : MonoBehaviour
         dialogueBox = dialogueBoxGO.GetComponent<BattleDialogueBox>();
         dialogueQueue = new Queue<string>();
         moveSelectionUI = moveSelectionUIGO.GetComponent<MoveSelectionUI>();
+        partyMemberSelectionUI = partyMemberSelectionUIGO.GetComponent<PartyMemberSelectionUI>();
 
         Instance = this;
     }
@@ -98,10 +105,9 @@ public class BattleManager : MonoBehaviour
     {
         if (state == BattleState.ActionSelection)
         {
-            ShowMoveSelectionScreen();
-
             state = BattleState.MoveSelection;
 
+            ShowMoveSelectionScreen();
             moveSelectionUI.SetCharacter(CurrentCharacter);
         }
     }
@@ -141,6 +147,31 @@ public class BattleManager : MonoBehaviour
         }
     }
 
+    public void SwitchButtonClicked()
+    {
+        if (state == BattleState.ActionSelection)
+        {
+            state = BattleState.PartyScreen;
+
+            ShowPartyScreen();
+            partyMemberSelectionUI.SetParty(party, partyMemberDiedThisTurn);
+        }
+    }
+
+    public void PartyMemberOptionClicked(CharacterInstance character)
+    {
+        if (state == BattleState.PartyScreen)
+        {
+            StartCoroutine(PlayerSwitch(CurrentCharacter, character));
+        } else if (state == BattleState.ReplaceDeadPartyMember)
+        {
+            ActivatePartyMember(character);
+            ShowActionSelectionScreen();
+            partyMemberDiedThisTurn = false;
+            EndRound();
+        }
+    }
+
     public void BackButtonClicked()
     {
         if (state == BattleState.MoveSelection || state == BattleState.PartyScreen)
@@ -158,21 +189,23 @@ public class BattleManager : MonoBehaviour
 
         wave = 1;
         SetRound(1);
+        partyMemberDiedThisTurn = false;
 
         // Set encounter info UI
         encounterInfoUI.SetEncounter(encounterManager.CurrentEncounter);
 
+        party = partyManager.PartyMembers;
+        foreach (PartyMemberInstance partyMember in party)
+            partyMember.IsPlayerTeam = true;
+
         // Set character UI for player team based on first two members of party
-        AddActivePartyMember(partyManager.PartyMembers[0]);  // party should always have at least 1 member in it
-        if (partyManager.PartyMembers.Count > 1)
-            AddActivePartyMember(partyManager.PartyMembers[1]);
+        AddActivePartyMember(party[0]);  // party should always have at least 1 member in it
+        if (party.Count > 1)
+            AddActivePartyMember(party[1]);
 
         List<CharacterInstance> characterInstances = new List<CharacterInstance>();
         foreach (PartyMemberInstance partyMember in playerTeam)
-        {
             characterInstances.Add(partyMember);
-            partyMember.IsPlayerTeam = true;
-        }
         playerTeamUI.SetTeam(characterInstances);
 
         // Set character UI for enemy team based on first wave of current encounter
@@ -200,6 +233,8 @@ public class BattleManager : MonoBehaviour
             {
                 foreach (CharacterInstance character in characters)
                     character.AddStatusEffect(new StatusEffectInstance(effect, 99, 0));
+                if (party.Count > 2) party[2].AddStatusEffect(new StatusEffectInstance(effect, 99, 0));
+                if (party.Count > 3) party[3].AddStatusEffect(new StatusEffectInstance(effect, 99, 0));
             }
         }
         
@@ -210,14 +245,33 @@ public class BattleManager : MonoBehaviour
     {
         DetermineTurnOrder();
         turnOrderUI.SetTurnOrder(turnQueue);
-        
+
         StartNextTurn();
     }
 
     private void EndRound()
     {
-        SetRound(round + 1);
-        StartRound();
+        // if a party member died this round, choose another (if there are any) to replace it
+        if (partyMemberDiedThisTurn)
+        {
+            state = BattleState.ReplaceDeadPartyMember;
+
+            if (party.Count > 1)
+            {
+            ShowPartyScreen();
+            partyMemberSelectionUI.SetParty(party, partyMemberDiedThisTurn);
+            } else
+            {
+                partyMemberDiedThisTurn = false;
+                EndRound();
+            }
+        } else
+        {
+            state = BattleState.RoundEnd;
+
+            SetRound(round + 1);
+            StartRound();
+        }
     }
 
     private void StartNextTurn()
@@ -254,10 +308,21 @@ public class BattleManager : MonoBehaviour
         EndTurn();
     }
 
+    private IEnumerator PlayerSwitch(CharacterInstance oldCharacter, CharacterInstance newCharacter)
+    {
+        Switch(oldCharacter, newCharacter);
+        
+        ShowActionSelectionScreen();
+
+        yield return dialogueBox.TypeDialogue($"Switched {oldCharacter.CharacterData.Name} with {newCharacter.CharacterData.Name}");
+
+        EndTurn();
+    }
+
     private IEnumerator EnemyTurn(CharacterInstance currentCharacter)
     {
         state = BattleState.EnemyTurn;
-        yield return UseMove(currentCharacter, playerTeam[Random.Range(0, playerTeam.Count)], currentCharacter.Moveset[0]);
+        yield return UseMove(currentCharacter, playerTeam[Random.Range(0, playerTeam.Count)], currentCharacter.Moveset[Random.Range(0, currentCharacter.Moveset.Count)]);
         EndTurn();
     }
 
@@ -313,7 +378,10 @@ public class BattleManager : MonoBehaviour
         }
         else
         {
-            CurrentCharacter.TurnEnd();
+            if (playerTeam.Exists(chr => chr.uniqueCharacterId == CurrentCharacter.uniqueCharacterId))
+            {
+                CurrentCharacter.TurnEnd();
+            }
 
             turnQueue.Dequeue();
             turnOrderUI.NextTurn();
@@ -322,6 +390,39 @@ public class BattleManager : MonoBehaviour
     }
 
     // Helper methods
+    private void Switch(CharacterInstance oldCharacter, CharacterInstance newCharacter)
+    {
+        // Update party to reflect the switch
+        int currentIndex = party.FindIndex(chr => chr.uniqueCharacterId == oldCharacter.uniqueCharacterId);
+        int newIndex = party.FindIndex(chr => chr.uniqueCharacterId == newCharacter.uniqueCharacterId);
+        (party[currentIndex], party[newIndex]) = (party[newIndex], party[currentIndex]);
+
+        // Update playerTeam to reflect the switch
+        currentIndex = playerTeam.FindIndex(chr => chr.uniqueCharacterId == oldCharacter.uniqueCharacterId);
+        playerTeam[currentIndex] = party.Find(chr => chr.uniqueCharacterId == newCharacter.uniqueCharacterId);
+
+        // Update characters to reflect the switch
+        characters[characters.FindIndex(chr => chr.uniqueCharacterId == oldCharacter.uniqueCharacterId)] = newCharacter;
+
+        // Update the character UI to reflect the switch
+        oldCharacter.CharacterUI = null;
+        playerTeamUI.SetTeam(playerTeam.ConvertAll(chr => (CharacterInstance)chr));
+    }
+
+    private void ActivatePartyMember(CharacterInstance character)
+    {
+        int partyIndex = party.FindIndex(chr => chr.uniqueCharacterId == character.uniqueCharacterId);
+        playerTeam.Add(party[partyIndex]);
+        if (partyIndex > 1)
+        {
+            (party[partyIndex], party[1]) = (party[1], party[partyIndex]);
+        }
+
+        characters.Add(character);
+
+        playerTeamUI.SetTeam(playerTeam.ConvertAll(chr => (CharacterInstance)chr));
+    }
+    
     private IEnumerator ShowQueuedDialogue()
     {
         foreach (string msg in dialogueQueue)
@@ -401,15 +502,16 @@ public class BattleManager : MonoBehaviour
         foreach (CharacterInstance character in deadCharacters)
             KillCharacter(character);
 
-        if (playerTeam.Count <= 0)
-            return true;
-        else if (enemyTeam.Count <= 0)
+        if (playerTeam.Count <= 0 || enemyTeam.Count <= 0)
             return true;
         else return false;
     }
 
     private void KillCharacter(CharacterInstance character)
     {
+        if (party.Exists(chr => chr.uniqueCharacterId == character.uniqueCharacterId))
+            partyMemberDiedThisTurn = true;
+
         characters.Remove(character);
         turnQueue = new Queue<CharacterInstance>(turnQueue.Where(chr => chr != character)); // remove character from the turn queue
         turnOrderUI.SetTurnOrder(turnQueue);
@@ -417,6 +519,7 @@ public class BattleManager : MonoBehaviour
         if (character.IsPlayerTeam)
         {
             playerTeam.RemoveAll(chr => chr.uniqueCharacterId == character.uniqueCharacterId);
+            party.RemoveAll(chr => chr.uniqueCharacterId == character.uniqueCharacterId);
             playerTeamUI.RemoveCharacter(character);
         }
         else
@@ -435,9 +538,11 @@ public class BattleManager : MonoBehaviour
             dialogueBoxGO.SetActive(true);
             actionSelectionButtons.SetActive(true);
         }
-        else if (state == BattleState.PartyScreen)
+        else if (state == BattleState.PartyScreen || state == BattleState.ReplaceDeadPartyMember)
         {
-
+            dialogueBoxGO.SetActive(true);
+            actionSelectionButtons.SetActive(true);
+            partyMemberSelectionUIGO.SetActive(false);
         }
     }
 
@@ -447,6 +552,13 @@ public class BattleManager : MonoBehaviour
         actionSelectionButtons.SetActive(false);
         moveSelectionUIGO.SetActive(true);
         moveInfoUIGO.SetActive(true);
+    }
+
+    private void ShowPartyScreen()
+    {
+        dialogueBoxGO.SetActive(false);
+        actionSelectionButtons.SetActive(false);
+        partyMemberSelectionUIGO.SetActive(true);
     }
 
     private void AddActivePartyMember(PartyMemberInstance partyMember)

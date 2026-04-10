@@ -142,7 +142,7 @@ public class CharacterInstance
     protected void UpdateStatusEffects(StatusEffectInstance effect)
     {
         StatusEffects.Add(effect);
-        CharacterUI.SetEffects(StatusEffects);
+        if (CharacterUI != null) CharacterUI.SetEffects(StatusEffects);
     }
 
     protected IEnumerator SetHP(int hp, bool smooth)

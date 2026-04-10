@@ -6,32 +6,32 @@ using UnityEngine.UI;
 
 public class CharacterUI : MonoBehaviour
 {
-    [SerializeField] private GameObject effectIconPrefab;
-    [SerializeField] private GameObject effectListIconPrefab;
+    [SerializeField] protected GameObject effectIconPrefab;
+    [SerializeField] protected GameObject effectListIconPrefab;
 
-    public CharacterInstance Character {  get; private set; }
+    public CharacterInstance Character {  get; protected set; }
     
-    [SerializeField] private Image characterSprite;
+    [SerializeField] protected Image characterSprite;
 
-    [SerializeField] private TextMeshProUGUI nameText;
-    [SerializeField] private TextMeshProUGUI levelText;
-    [SerializeField] private TextMeshProUGUI healthText;
+    [SerializeField] protected TextMeshProUGUI nameText;
+    [SerializeField] protected TextMeshProUGUI levelText;
+    [SerializeField] protected TextMeshProUGUI healthText;
 
-    [SerializeField] private Slider healthBar;
+    [SerializeField] protected Slider healthBar;
 
-    [SerializeField] private Transform effectIconContainer;
-    private List<GameObject> effectIcons;
-    private List<StatusEffectInstance> effects;
+    [SerializeField] protected Transform effectIconContainer;
+    protected List<GameObject> effectIcons;
+    protected List<StatusEffectInstance> effects;
 
-    [SerializeField] private Hoverable characterPlate;
+    [SerializeField] protected Hoverable characterPlate;
 
-    private void Awake()
+    protected virtual void Awake()
     {
         effectIcons = new List<GameObject>();
         effects = new List<StatusEffectInstance>();
     }
 
-    public void SetCharacter(CharacterInstance characterInstance)
+    public virtual void SetCharacter(CharacterInstance characterInstance)
     {
         Character = characterInstance;
         Character.CharacterUI = this;
@@ -83,39 +83,39 @@ public class CharacterUI : MonoBehaviour
         else characterPlate.Unhover();
     }
 
-    private void SetCharacterSprite(Sprite sprite)
+    protected void SetCharacterSprite(Sprite sprite)
     {
         characterSprite.sprite = sprite;
     }
 
-    private void SetNameText(string text)
+    protected void SetNameText(string text)
     {
         nameText.text = text;
     }
 
-    private void SetLevelText(int level)
+    protected void SetLevelText(int level)
     {
         levelText.text = $"Lvl {level}";
     }
 
-    private void SetHealthText(int currentHP, int maxHP)
+    protected void SetHealthText(int currentHP, int maxHP)
     {
         healthText.text = $"{currentHP}/{maxHP}";
     }
 
-    private void SetHealthBar(float currentHP, int maxHP)
+    protected void SetHealthBar(float currentHP, int maxHP)
     {
         healthBar.maxValue = maxHP;
         healthBar.value = currentHP;
     }
 
-    private void SetHealthUI(int currentHP, int maxHP)
+    protected void SetHealthUI(int currentHP, int maxHP)
     {
         SetHealthText(currentHP, maxHP);
         SetHealthBar(currentHP, maxHP);
     }
 
-    private void SetEffectIcons(List<StatusEffectInstance> statusEffects)
+    protected void SetEffectIcons(List<StatusEffectInstance> statusEffects)
     {
         // Delete current effect icons (if any)
         if (effectIcons.Count > 0)
@@ -136,7 +136,7 @@ public class CharacterUI : MonoBehaviour
         }
     }
 
-    private void NewEffectIcon(StatusEffectInstance effect)
+    protected void NewEffectIcon(StatusEffectInstance effect)
     {
         if (effects.Count < 5)
         {
