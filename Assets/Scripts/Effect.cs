@@ -12,6 +12,8 @@ public class Effect
     public System.Action<CharacterInstance, StatusEffectInstance, AbilityData> OnBeforeDamage { get; set; }
     public System.Action<CharacterInstance, StatusEffectInstance, AbilityData> OnAfterDamage { get; set; }
 
+    public System.Action<CharacterInstance, StatusEffectInstance, AbilityData> OnAfterHPChanged { get; set; }
+
     public System.Action<CharacterInstance, StatusEffectInstance, AbilityData, StatusEffectInstance> OnStatusGained { get; set; }
     public System.Action<CharacterInstance, StatusEffectInstance, AbilityData, StatusEffectInstance> OnStatusRemoved { get; set; }
     

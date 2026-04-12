@@ -30,6 +30,8 @@ MonoBehaviour:
     _level: 0
   - _moveData: {fileID: 11400000, guid: b4bfa69b34dfa1a4592df61f8708c9c6, type: 2}
     _level: 3
+  - _moveData: {fileID: 11400000, guid: 1b77c8a8e421a7348b6eed9a8778a86f, type: 2}
+    _level: 5
   - _moveData: {fileID: 11400000, guid: 0b8501ffd83419a4cb135526f8460e53, type: 2}
     _level: 7
   _abilityLearnset:

@@ -10,24 +10,26 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 05c5dc6b49e6d7f4b9dcbbca7127ff27, type: 3}
-  m_Name: Fish
+  m_Name: Sharpen
   m_EditorClassIdentifier: Assembly-CSharp::MoveData
-  _name: Fish
-  _id: fish
-  _description: Catch a fish and use it to heal yourself or an ally!
-  _type: 2
-  _categories: 03000000
+  _name: Sharpen
+  _id: sharpen
+  _description: Increase your attack.
+  _type: 4
+  _categories: 01000000
   _element: 0
-  _power: 15
+  _power: 30
   _accuracy: 100
-  _target: 1
+  _target: 4
   _damageEffects: []
-  _statusEffects: []
-  _healEffects:
-  - _targets: 1
+  _statusEffects:
+  - _targets: 4
     _accuracy: 100
-    _power: 15
+    _power: 30
     _element: 0
     _alwaysHitsSelf: 1
     _alwaysHits: 1
-    _isPercentageHeal: 0
+    _duration: 3
+    _statusEffects:
+    - {fileID: 11400000, guid: d276b818f9c494d47bab05cca3015714, type: 2}
+  _healEffects: []

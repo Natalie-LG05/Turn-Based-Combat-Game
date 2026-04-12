@@ -150,6 +150,14 @@ public class CharacterInstance
         }
     }
 
+    public void ApplyMoveHeal(CharacterInstance user, MoveData move, MoveHealEffect effect)
+    {
+        float power = effect.Power * (1 + (user.Support / 100f));
+
+        int healAmount = effect.IsPercentageHeal ? Mathf.RoundToInt((power / 100f) * MaxHP) : Mathf.RoundToInt(power);
+        Heal(healAmount);
+    }
+
     public void ApplyStatusEffect(StatusEffectInstance effect, bool procEffects)
     {
         StatusEffectInstance oldEffect = StatusEffects.Find(status => status.StatusEffectData.Id == effect.StatusEffectData.Id);
@@ -241,9 +249,26 @@ public class CharacterInstance
         _currentHP = newHP >= 0 ? newHP : 0;
 
         foreach (StatusEffectInstance status in StatusEffects)
+        {
             status.Effects.OnAfterDamage?.Invoke(this, status, null);
+            status.Effects.OnAfterHPChanged?.Invoke(this, status, null);
+        }
         foreach (AbilityData ability in Abilities)
+        {
             ability.Effects.OnAfterDamage?.Invoke(this, null, ability);
+            ability.Effects.OnAfterHPChanged?.Invoke(this, null, ability);
+        }
+    }
+
+    public void Heal(int healAmount)
+    {
+        int newHP = _currentHP + healAmount;
+        _currentHP = newHP <= MaxHP ? newHP : MaxHP;
+
+        foreach (StatusEffectInstance status in StatusEffects)
+            status.Effects.OnAfterHPChanged?.Invoke(this, status, null);
+        foreach (AbilityData ability in Abilities)
+            ability.Effects.OnAfterHPChanged?.Invoke(this, null, ability);
     }
 
     protected void InitializeAdditionalStats()

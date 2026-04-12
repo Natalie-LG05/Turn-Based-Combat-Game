@@ -54,15 +54,27 @@ public class CharacterUI : MonoBehaviour
         int newHP = Character.CurrentHP;
         int maxHP = Character.MaxHP;
 
-        float changeAmt = curHPVal - newHP;
-        while (curHPVal - newHP > Mathf.Epsilon)
+        if (newHP < curHPVal)
         {
-            curHPVal -= changeAmt * Time.deltaTime;
-            SetHealthBar(curHPVal, maxHP);
-            yield return null;
+            float changeAmt = curHPVal - newHP;
+            while (curHPVal - newHP > Mathf.Epsilon)
+            {
+                curHPVal -= changeAmt * Time.deltaTime;
+                SetHealthBar(curHPVal, maxHP);
+                yield return null;
+            }
+        } else
+        {
+            float changeAmt = newHP - curHPVal;
+            while (newHP - curHPVal > Mathf.Epsilon)
+            {
+                curHPVal += changeAmt * Time.deltaTime;
+                SetHealthBar(curHPVal, maxHP);
+                yield return null;
+            }
         }
 
-        SetHealthBar(newHP, maxHP);
+            SetHealthBar(newHP, maxHP);
         SetHealthText(newHP, maxHP);
     }
 

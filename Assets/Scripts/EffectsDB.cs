@@ -7,6 +7,20 @@ public class EffectsDB
     {
         // Standard stat ups
         {
+            "attack_up",
+            new Effect()
+            {
+                OnApply = (CharacterInstance character, StatusEffectInstance statusEffect) =>
+                {
+                    character.AddModifier(Stat.Attack, 1 + (statusEffect.BuffPower / 100f), statusEffect.StatusEffectData.Id);
+                },
+                OnRemove = (CharacterInstance character, StatusEffectInstance statusEffect) =>
+                {
+                    character.RemoveModifier(Stat.Attack, statusEffect.StatusEffectData.Id);
+                }
+            }
+        },
+        {
             "defense_up",
             new Effect()
             {
@@ -99,7 +113,7 @@ public class EffectsDB
             "hard_shell",
             new Effect()
             {
-                OnAfterDamage = (CharacterInstance character, StatusEffectInstance sourceEffect, AbilityData ability) =>
+                OnAfterHPChanged = (CharacterInstance character, StatusEffectInstance sourceEffect, AbilityData ability) =>
                 {
                     character.RemoveStatusEffect(ability.StatusEffect.Id, false);
                     

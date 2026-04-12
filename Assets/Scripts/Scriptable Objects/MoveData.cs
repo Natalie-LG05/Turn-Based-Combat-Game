@@ -18,6 +18,7 @@ public class MoveData : ScriptableObject
 
     [SerializeField] protected List<MoveDamageEffect> _damageEffects;
     [SerializeField] protected List<MoveStatusEffect> _statusEffects;
+    [SerializeField] protected List<MoveHealEffect> _healEffects;
 
     public string Name { get => _name; }
     public string Id { get => _id; }
@@ -33,6 +34,7 @@ public class MoveData : ScriptableObject
 
     public List<MoveDamageEffect> DamageEffects { get => _damageEffects; }
     public List<MoveStatusEffect> StatusEffects { get => _statusEffects; }
+    public List<MoveHealEffect> HealEffects { get => _healEffects; }
 
     public List<MoveElement> Elements
     {
@@ -41,6 +43,7 @@ public class MoveData : ScriptableObject
             List<MoveElement> elements = new List<MoveElement>();
             foreach (MoveDamageEffect effect in _damageEffects) elements.Add(effect.Element);
             foreach (MoveStatusEffect effect in _statusEffects) elements.Add(effect.Element);
+            foreach (MoveHealEffect effect in _healEffects) elements.Add(effect.Element);
             return elements;
         }
     }
@@ -52,6 +55,7 @@ public class MoveData : ScriptableObject
             List<int> powers = new List<int>();
             foreach (MoveDamageEffect effect in _damageEffects) powers.Add(effect.Power);
             foreach (MoveStatusEffect effect in _statusEffects) powers.Add(effect.Power);
+            foreach (MoveHealEffect effect in _healEffects) powers.Add(effect.Power);
             return powers;
         }
     }
@@ -63,6 +67,7 @@ public class MoveData : ScriptableObject
             List<int> accuracies = new List<int>();
             foreach (MoveDamageEffect effect in _damageEffects) accuracies.Add(effect.Accuracy);
             foreach (MoveStatusEffect effect in _statusEffects) accuracies.Add(effect.Accuracy);
+            foreach (MoveHealEffect effect in _healEffects) accuracies.Add(effect.Accuracy);
             return accuracies;
         }
     }
@@ -84,6 +89,7 @@ public class MoveData : ScriptableObject
             List<MoveTarget> targets = new List<MoveTarget>();
             foreach (MoveDamageEffect effect in _damageEffects) targets.Add(effect.Targets);
             foreach (MoveStatusEffect effect in _statusEffects) targets.Add(effect.Targets);
+            foreach (MoveHealEffect effect in _healEffects) targets.Add(effect.Targets);
             return targets;
         }
     }
@@ -135,4 +141,12 @@ public class MoveStatusEffect : MoveEffect
 
     public int Duration { get => _duration; }
     public List<StatusEffectData> StatusEffects { get => _statusEffects; }
+}
+
+[System.Serializable]
+public class MoveHealEffect : MoveEffect
+{
+    [SerializeField] private bool _isPercentageHeal;
+
+    public bool IsPercentageHeal { get => _isPercentageHeal; }
 }

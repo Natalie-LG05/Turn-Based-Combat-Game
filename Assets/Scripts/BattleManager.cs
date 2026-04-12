@@ -346,7 +346,7 @@ public class BattleManager : MonoBehaviour
         {
             foreach (CharacterInstance character in GetEffectTargets(effect.Targets, CurrentCharacter, target))
             {
-                if (CheckIfMoveEffectHits(user, target, effect))
+                if (CheckIfMoveEffectHits(user, character, effect))
                 {
                     for (int i = 0; i < effect.Hits; i++)
                     {
@@ -364,7 +364,7 @@ public class BattleManager : MonoBehaviour
         {
             foreach (CharacterInstance character in GetEffectTargets(effect.Targets, CurrentCharacter, target))
             {
-                if (CheckIfMoveEffectHits(user, target, effect))
+                if (CheckIfMoveEffectHits(user, character, effect))
                 {
                     character.ApplyMoveStatusEffect(CurrentCharacter, move, effect);
                 } else
@@ -374,6 +374,21 @@ public class BattleManager : MonoBehaviour
             }
         }
         yield return ShowQueuedDialogue();
+
+        foreach (MoveHealEffect effect in move.HealEffects)
+        {
+            foreach (CharacterInstance character in GetEffectTargets(effect.Targets, CurrentCharacter, target))
+            {
+                if (CheckIfMoveEffectHits(user, character, effect))
+                {
+                    character.ApplyMoveHeal(user, move, effect);
+                    yield return UpdateHealthbar(character);
+                } else
+                {
+                    yield return dialogueBox.TypeDialogue($"{user.CharacterData.Name} (lvl {user.Level}) missed!");
+                }
+            }
+        }
 
         state = prevState;
     }
