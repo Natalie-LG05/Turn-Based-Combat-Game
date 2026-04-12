@@ -105,7 +105,6 @@ public class EffectsDB
                     
                     float healthPercent = ((float)character.CurrentHP / character.MaxHP) * 100;
                     float power = Mathf.Floor((100 - healthPercent) / 2);
-                    Debug.Log(power);
                     character.ApplyStatusEffect(new StatusEffectInstance(ability.StatusEffect, 99, power, character, character), false);
                 }
             }

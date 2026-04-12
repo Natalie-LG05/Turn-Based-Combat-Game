@@ -51,6 +51,7 @@ public class MoveOptionUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
 
     public void OnPointerClick(PointerEventData eventData)
     {
+        image.color = normalColor;
         BattleManager.Instance.MoveOptionClicked(_move);
     }
 }

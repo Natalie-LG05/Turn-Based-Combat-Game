@@ -34,5 +34,5 @@ MonoBehaviour:
     _level: 7
   _abilityLearnset:
   - _abilityData: {fileID: 11400000, guid: 14c4573371e5a6e4cba439aa1db454f4, type: 2}
-    _level: 3
+    _level: 5
   _rarity: 0

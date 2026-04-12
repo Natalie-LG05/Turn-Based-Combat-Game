@@ -202,11 +202,7 @@ public class BattleManager : MonoBehaviour
         AddActivePartyMember(party[0]);  // party should always have at least 1 member in it
         if (party.Count > 1)
             AddActivePartyMember(party[1]);
-
-        List<CharacterInstance> characterInstances = new List<CharacterInstance>();
-        foreach (PartyMemberInstance partyMember in playerTeam)
-            characterInstances.Add(partyMember);
-        playerTeamUI.SetTeam(characterInstances);
+        playerTeamUI.SetTeam(playerTeam.ConvertAll(parMem => (CharacterInstance)parMem));
 
         // Set character UI for enemy team based on first wave of current encounter
         foreach (EnemyInstance enemy in encounterManager.CurrentEncounter.Waves[wave - 1].Enemies)
@@ -215,24 +211,16 @@ public class BattleManager : MonoBehaviour
             enemy.IsPlayerTeam = false;
             AddEnemy(enemy);
         }
-
-        characterInstances = new List<CharacterInstance>();
-        foreach (EnemyInstance enemy in enemyTeam)
-        {
-            characterInstances.Add(enemy);
-        }
-        enemyTeamUI.SetTeam(characterInstances);
+        enemyTeamUI.SetTeam(enemyTeam.ConvertAll(enemy => (CharacterInstance)enemy));
 
         foreach (CharacterInstance character in characters)
             character.BattleStart();
 
-        // Apply status effects of encounter modifiers
+        // Apply status effects of encounter modifiers to inactive party members
         foreach (EncounterModifierData modifier in encounterManager.CurrentEncounter.Modifiers)
         {
             foreach (StatusEffectData effect in modifier.Effects)
             {
-                foreach (CharacterInstance character in characters)
-                    character.ApplyStatusEffect(new StatusEffectInstance(effect, 99, 0, null, character), false);
                 if (party.Count > 2) party[2].ApplyStatusEffect(new StatusEffectInstance(effect, 99, 0, null, party[2]), false);
                 if (party.Count > 3) party[3].ApplyStatusEffect(new StatusEffectInstance(effect, 99, 0, null, party[3]), false);
             }
@@ -332,6 +320,21 @@ public class BattleManager : MonoBehaviour
         EndTurn();
     }
 
+    private void NewEnemyWave()
+    {
+        wave++;
+
+        foreach (EnemyInstance enemy in encounterManager.CurrentEncounter.Waves[wave - 1].Enemies)
+        {
+            enemy.Init();  // enemies need to be initialized somewhere, here is the place that makes sense to do so
+            enemy.IsPlayerTeam = false;
+            AddEnemy(enemy);
+        }
+        enemyTeamUI.SetTeam(enemyTeam.ConvertAll(enemy => (CharacterInstance)enemy));
+
+        StartRound();
+    }
+
     private IEnumerator UseMove(CharacterInstance user, CharacterInstance target, MoveData move)
     {
         BattleState prevState = state;
@@ -377,16 +380,20 @@ public class BattleManager : MonoBehaviour
 
     private void EndTurn()
     {
+        CurrentCharacter.TurnEnd();
+
+        turnQueue.Dequeue();
+        turnOrderUI.NextTurn();
+
         if (CheckDeadCharacters()) 
         {
-            Debug.Log(playerTeam.Count <= 0 ? "Enemies Win!" : "Player Wins!");
+            if (playerTeam.Count > 0 && encounterManager.CurrentEncounter.Waves.Count() > wave)
+                NewEnemyWave();
+            else
+                Debug.Log(playerTeam.Count <= 0 ? "Enemies Win!" : "Player Wins!");
         }
         else
         {
-            CurrentCharacter.TurnEnd();
-
-            turnQueue.Dequeue();
-            turnOrderUI.NextTurn();
             StartNextTurn();
         }
     }
@@ -594,12 +601,30 @@ public class BattleManager : MonoBehaviour
     {
         playerTeam.Add(partyMember);
         characters.Add(partyMember);
+
+        // Apply status effects of encounter modifiers
+        foreach (EncounterModifierData modifier in encounterManager.CurrentEncounter.Modifiers)
+        {
+            foreach (StatusEffectData effect in modifier.Effects)
+            {
+                partyMember.ApplyStatusEffect(new StatusEffectInstance(effect, 99, 0, null, partyMember), false);
+            }
+        }
     }
 
     private void AddEnemy(EnemyInstance enemy)
     {
         enemyTeam.Add(enemy);
         characters.Add(enemy);
+
+        // Apply status effects of encounter modifiers
+        foreach (EncounterModifierData modifier in encounterManager.CurrentEncounter.Modifiers)
+        {
+            foreach (StatusEffectData effect in modifier.Effects)
+            {
+                enemy.ApplyStatusEffect(new StatusEffectInstance(effect, 99, 0, null, enemy), false);
+            }
+        }
     }
 
     private void SetRound(int round)
