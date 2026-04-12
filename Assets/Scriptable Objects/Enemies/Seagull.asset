@@ -17,19 +17,21 @@ MonoBehaviour:
   _description: These are commonly found around beaches, though they have also been
     seen flying out over the ocean.
   _sprite: {fileID: 6281131167225639102, guid: 09b4390ae5e077d4f8478550354ae0ad, type: 3}
-  categories: 01000000
+  _categories: 01000000
   _baseStatPoints: 50
   _levelupStatPoints: 7
   _statSpread:
     _maxHP: 30
-    _attack: 15
+    _attack: 10
     _support: 20
-    _defense: 10
+    _defense: 15
     _speed: 25
   _moveLearnset:
   - _moveData: {fileID: 11400000, guid: 11827fca9dde23d43889979d48b6d355, type: 2}
     _level: 0
   - _moveData: {fileID: 11400000, guid: 87601bc30b06e3343a73c2d1baac1f5c, type: 2}
+    _level: 3
+  - _moveData: {fileID: 11400000, guid: a00368dcd41905749ab4e351d43c4e8f, type: 2}
     _level: 5
   _abilityLearnset:
   - _abilityData: {fileID: 11400000, guid: 0a8ff3ad46da9f4478aa3e630125097f, type: 2}

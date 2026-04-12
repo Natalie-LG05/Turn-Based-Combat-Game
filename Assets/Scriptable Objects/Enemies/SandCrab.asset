@@ -16,7 +16,7 @@ MonoBehaviour:
   _id: sand_crab
   _description: A crab that appears to be made out of sand?
   _sprite: {fileID: 3986058253563900893, guid: c6ecc42f674d3a04180e62accf378f9a, type: 3}
-  categories: 00000000
+  _categories: 00000000
   _baseStatPoints: 50
   _levelupStatPoints: 7
   _statSpread:

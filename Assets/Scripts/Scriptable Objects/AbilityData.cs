@@ -7,9 +7,13 @@ public class AbilityData : ScriptableObject
     [SerializeField] private string _id;
     [SerializeField, TextArea] private string _description;
 
+    [SerializeField] private StatusEffectData _statusEffect;
+
     public string Name { get => _name; }
     public string Id { get => _id; }
     public string Description { get => _description; }
+
+    public StatusEffectData StatusEffect { get => _statusEffect; }
 
     public Effect Effects
     {

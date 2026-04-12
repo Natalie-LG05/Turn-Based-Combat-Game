@@ -232,9 +232,9 @@ public class BattleManager : MonoBehaviour
             foreach (StatusEffectData effect in modifier.Effects)
             {
                 foreach (CharacterInstance character in characters)
-                    character.AddStatusEffect(new StatusEffectInstance(effect, 99, 0));
-                if (party.Count > 2) party[2].AddStatusEffect(new StatusEffectInstance(effect, 99, 0));
-                if (party.Count > 3) party[3].AddStatusEffect(new StatusEffectInstance(effect, 99, 0));
+                    character.ApplyStatusEffect(new StatusEffectInstance(effect, 99, 0, null, character), false);
+                if (party.Count > 2) party[2].ApplyStatusEffect(new StatusEffectInstance(effect, 99, 0, null, party[2]), false);
+                if (party.Count > 3) party[3].ApplyStatusEffect(new StatusEffectInstance(effect, 99, 0, null, party[3]), false);
             }
         }
         
@@ -245,6 +245,9 @@ public class BattleManager : MonoBehaviour
     {
         DetermineTurnOrder();
         turnOrderUI.SetTurnOrder(turnQueue);
+
+        foreach (CharacterInstance character in characters)
+            character.RoundStart();
 
         StartNextTurn();
     }
@@ -268,6 +271,9 @@ public class BattleManager : MonoBehaviour
         } else
         {
             state = BattleState.RoundEnd;
+
+            foreach (CharacterInstance character in characters)
+                character.RoundEnd();
 
             SetRound(round + 1);
             StartRound();
@@ -337,12 +343,13 @@ public class BattleManager : MonoBehaviour
         {
             foreach (CharacterInstance character in GetEffectTargets(effect.Targets, CurrentCharacter, target))
             {
-                bool hit = Random.Range(1, 101) <= effect.Accuracy;
-
-                if (hit)
+                if (CheckIfMoveEffectHits(user, target, effect))
                 {
                     for (int i = 0; i < effect.Hits; i++)
-                        yield return character.TakeAttackDamage(user, move, effect);
+                    {
+                        character.TakeAttackDamage(user, move, effect);
+                        yield return UpdateHealthbar(character);
+                    }
                 } else
                 {
                     yield return dialogueBox.TypeDialogue($"{user.CharacterData.Name} (lvl {user.Level}) missed!");
@@ -354,9 +361,7 @@ public class BattleManager : MonoBehaviour
         {
             foreach (CharacterInstance character in GetEffectTargets(effect.Targets, CurrentCharacter, target))
             {
-                bool hit = Random.Range(1, 101) <= effect.Accuracy;
-
-                if (hit)
+                if (CheckIfMoveEffectHits(user, target, effect))
                 {
                     character.ApplyMoveStatusEffect(CurrentCharacter, move, effect);
                 } else
@@ -378,10 +383,7 @@ public class BattleManager : MonoBehaviour
         }
         else
         {
-            if (playerTeam.Exists(chr => chr.uniqueCharacterId == CurrentCharacter.uniqueCharacterId))
-            {
-                CurrentCharacter.TurnEnd();
-            }
+            CurrentCharacter.TurnEnd();
 
             turnQueue.Dequeue();
             turnOrderUI.NextTurn();
@@ -390,6 +392,33 @@ public class BattleManager : MonoBehaviour
     }
 
     // Helper methods
+    private bool CheckIfMoveEffectHits(CharacterInstance user, CharacterInstance target, MoveEffect effect)
+    {
+        if (effect.AlwaysHits)
+            return true;
+        else if (effect.AlwaysHitsSelf && user.uniqueCharacterId == target.uniqueCharacterId)
+            return true;
+
+        List<float> accuracyModifierVals = user.StatModifiers[Stat.Accuracy].Select(mod => mod.Power).ToList();
+        List<float> evasionModifierVals = target.StatModifiers[Stat.Evasion].Select(mod => mod.Power).ToList();
+
+        float userAccuracyMod = accuracyModifierVals.Aggregate(1f, (acc, next) => acc * next);
+        float targetEvasionMod = evasionModifierVals.Aggregate(1f, (acc, next) => acc * (1 / next));
+
+        float updatedAccuracy = effect.Accuracy * userAccuracyMod * targetEvasionMod;
+
+        int randNum = Random.Range(1, 101);
+        Debug.Log($"{randNum} <= {updatedAccuracy}");
+        bool hit = randNum <= updatedAccuracy;
+
+        return hit;
+    }
+
+    private IEnumerator UpdateHealthbar(CharacterInstance character)
+    {
+        yield return character.CharacterUI.UpdateHealthSmooth();
+    }
+
     private void Switch(CharacterInstance oldCharacter, CharacterInstance newCharacter)
     {
         // Update party to reflect the switch

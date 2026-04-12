@@ -16,17 +16,19 @@ MonoBehaviour:
   _id: harden
   _description: Increase your defense.
   _type: 4
-  _element: 0
   _categories: 01000000
-  _power: 20
+  _element: 0
+  _power: 15
   _accuracy: 100
   _target: 4
   _damageEffects: []
   _statusEffects:
   - _targets: 4
     _accuracy: 100
-    _power: 15
+    _power: 30
     _element: 0
+    _alwaysHitsSelf: 1
+    _alwaysHits: 1
     _duration: 3
     _statusEffects:
     - {fileID: 11400000, guid: d8094c9573cbdd7499d12920119cf6a7, type: 2}

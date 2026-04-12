@@ -14,4 +14,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::AbilityData
   _name: Hard Shell
   _id: hard_shell
-  _description: Increases your defense the lower your HP is.
+  _description: Increases your defense the lower your HP is. The power is 0.5% per
+    1% health missing.
+  _statusEffect: {fileID: 11400000, guid: 14dc18e0b1073e747b383809d4eef2d9, type: 2}

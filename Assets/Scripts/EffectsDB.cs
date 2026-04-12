@@ -5,58 +5,90 @@ public class EffectsDB
 {
     public static Dictionary<string, Effect> StatusEffects { get; private set; } = new Dictionary<string, Effect>()
     {
+        // Standard stat ups
         {
-            "speed_down",
+            "defense_up",
             new Effect()
             {
-                OnApply = (CharacterInstance sourceCharacter, CharacterInstance targetCharacter, float power) =>
+                OnApply = (CharacterInstance character, StatusEffectInstance statusEffect) =>
                 {
-                    // Add a speed down modifier to character that gets this effect
+                    character.AddModifier(Stat.Defense, 1 + (statusEffect.BuffPower / 100f), statusEffect.StatusEffectData.Id);
+                },
+                OnRemove = (CharacterInstance character, StatusEffectInstance statusEffect) =>
+                {
+                    character.RemoveModifier(Stat.Defense, statusEffect.StatusEffectData.Id);
                 }
-            } 
+            }
         },
         {
             "evasion_up",
             new Effect()
             {
-                OnApply = (CharacterInstance sourceCharacter, CharacterInstance targetCharacter, float power) =>
+                OnApply = (CharacterInstance character, StatusEffectInstance statusEffect) =>
                 {
-                    // Add an evasion up modifier to character that gets this effect
+                    character.AddModifier(Stat.Evasion, 1 + (statusEffect.BuffPower / 100f), statusEffect.StatusEffectData.Id);
+                },
+                OnRemove = (CharacterInstance character, StatusEffectInstance statusEffect) =>
+                {
+                    character.RemoveModifier(Stat.Evasion, statusEffect.StatusEffectData.Id);
                 }
             }
         },
+        // Standard stat downs
         {
-            "defense_up",
+            "speed_down",
             new Effect()
             {
-                OnApply = (CharacterInstance sourceCharacter, CharacterInstance targetCharacter, float power) =>
+                OnApply = (CharacterInstance character, StatusEffectInstance statusEffect) =>
                 {
-                    // Add a defense up modifier to character that gets this effect
+                    character.AddModifier(Stat.Speed, 1 - (statusEffect.DebuffPower / 100f), statusEffect.StatusEffectData.Id);
+                },
+                OnRemove = (CharacterInstance character, StatusEffectInstance statusEffect) =>
+                {
+                    character.RemoveModifier(Stat.Speed, statusEffect.StatusEffectData.Id);
+                }
+            } 
+        },
+        // Move statuses
+        {
+            "whirlpool",
+            new Effect()
+            {
+                OnApply = (CharacterInstance character, StatusEffectInstance statusEffect) =>
+                {
+                    character.AddModifier(Stat.Speed, 1 - (statusEffect.DebuffPower / 100f), statusEffect.StatusEffectData.Id);
+                },
+                OnRemove = (CharacterInstance character, StatusEffectInstance statusEffect) =>
+                {
+                    character.RemoveModifier(Stat.Speed, statusEffect.StatusEffectData.Id);
                 }
             }
         },
+        // Ability statuses
         {
             "hard_shell",
             new Effect()
             {
-                OnApply = (CharacterInstance sourceCharacter, CharacterInstance targetCharacter, float power) =>
+                OnApply = (CharacterInstance character, StatusEffectInstance statusEffect) =>
                 {
-                    // Add a defense up modifier to character that gets this effect
+                    character.AddModifier(Stat.Defense, 1 + (statusEffect.BuffPower / 100f), statusEffect.StatusEffectData.Id);
+                },
+                OnRemove = (CharacterInstance character, StatusEffectInstance statusEffect) =>
+                {
+                    character.RemoveModifier(Stat.Defense, statusEffect.StatusEffectData.Id);
                 }
             }
         },
-        {
-            "evasive",
-            new Effect()
-            {
-                // Double evasion gained from evastion up effects
-            }
-        },
+        // Encounter modifier statuses
         {
             "fast_crabs",
             new Effect()
             {
-                // Increase Speed by 15% if this character is a crab
+                OnApply = (CharacterInstance character, StatusEffectInstance statusEffect) =>
+                {
+                    if (character.CharacterData.Categories.Contains(CharacterCategory.Crab))
+                        character.AddModifier(Stat.Speed, 1.5f, statusEffect.StatusEffectData.Id);
+                }
             }
         },
     };
@@ -67,9 +99,14 @@ public class EffectsDB
             "hard_shell",
             new Effect()
             {
-                OnTakeDamage = (CharacterInstance sourceCharacter) =>
+                OnAfterDamage = (CharacterInstance character, StatusEffectInstance sourceEffect, AbilityData ability) =>
                 {
-                    // Add hard_shell status effect with power based on user HP
+                    character.RemoveStatusEffect(ability.StatusEffect.Id, false);
+                    
+                    float healthPercent = ((float)character.CurrentHP / character.MaxHP) * 100;
+                    float power = Mathf.Floor((100 - healthPercent) / 2);
+                    Debug.Log(power);
+                    character.ApplyStatusEffect(new StatusEffectInstance(ability.StatusEffect, 99, power, character, character), false);
                 }
             }
         },
@@ -77,7 +114,13 @@ public class EffectsDB
             "evasive",
             new Effect()
             {
-                // On initialization add the evasive status effect
+                OnStatusGained = (CharacterInstance character, StatusEffectInstance sourceEffect, AbilityData ability, StatusEffectInstance statusEffect) =>
+                {
+                    character.RemoveStatusEffect(statusEffect, false);
+                    character.ApplyStatusEffect(new StatusEffectInstance(statusEffect.StatusEffectData,
+                        statusEffect.Duration, statusEffect.BuffPower * 2, statusEffect.SourceCharacter,
+                        statusEffect.Character), false);
+                }
             }
         },
     };

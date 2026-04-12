@@ -14,6 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::StatusEffectData
   _name: Fast Crabs
   _id: fast_crabs
-  _description: +15% Speed if this character is a crab.
+  _description: +50% Speed if this character is a crab.
+  _type: 0
   _iconColor: {r: 0.9490196, g: 0.42745098, b: 0.42745098, a: 1}
   _isPermanent: 1

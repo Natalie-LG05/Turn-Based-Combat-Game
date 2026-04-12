@@ -17,7 +17,11 @@ public class EffectInfoUI : MonoBehaviour
             _effect = value;
             nameText.text = _effect.StatusEffectData.Name;
             durationText.text = $"{(_effect.StatusEffectData.IsPermanent ? "-" : _effect.Duration)} Turns";
-            descriptionText.text = _effect.StatusEffectData.Description.Replace("{x}", _effect.Power.ToString());
+
+            string description = _effect.StatusEffectData.Description;
+            description = description.Replace("{i}", _effect.BuffPower.ToString());
+            description = description.Replace("{d}", _effect.DebuffPower.ToString());
+            descriptionText.text = description;
         }
     }
 }

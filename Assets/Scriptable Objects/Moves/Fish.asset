@@ -10,25 +10,16 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 05c5dc6b49e6d7f4b9dcbbca7127ff27, type: 3}
-  m_Name: Evade
+  m_Name: Fish
   m_EditorClassIdentifier: Assembly-CSharp::MoveData
-  _name: Evade
-  _id: evade
-  _description: Increase your evasion.
-  _type: 4
-  _categories: 01000000
+  _name: Fish
+  _id: fish
+  _description: Catch a fish and use it to heal yourself or an ally!
+  _type: 2
   _element: 0
-  _power: 15
+  _categories: 03000000
+  _power: 0
   _accuracy: 100
-  _target: 4
+  _target: 1
   _damageEffects: []
-  _statusEffects:
-  - _targets: 4
-    _accuracy: 100
-    _power: 30
-    _element: 0
-    _alwaysHitsSelf: 1
-    _alwaysHits: 1
-    _duration: 3
-    _statusEffects:
-    - {fileID: 11400000, guid: 29078210158b47044bc015d040950bd1, type: 2}
+  _statusEffects: []

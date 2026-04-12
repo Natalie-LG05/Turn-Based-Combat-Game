@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 [CreateAssetMenu(fileName = "NewCharacterData", menuName = "ScriptableObjects/Character Data", order = -1000)]
@@ -8,7 +9,7 @@ public class CharacterData : ScriptableObject
     [SerializeField, TextArea] protected string _description;
     [SerializeField] protected Sprite _sprite;
 
-    [SerializeField] protected CharacterCategory[] categories;
+    [SerializeField] protected List<CharacterCategory> _categories;
 
     [SerializeField] protected int _baseStatPoints;
     [SerializeField] protected int _levelupStatPoints;
@@ -21,6 +22,8 @@ public class CharacterData : ScriptableObject
     public string Id { get => _id; }
     public string Description { get => _description; }
     public Sprite Sprite { get => _sprite; }
+
+    public List<CharacterCategory> Categories { get => _categories; }
 
     public int BaseStatPoints { get => _baseStatPoints; }
     public int LevelupStatPoints { get => _levelupStatPoints; }

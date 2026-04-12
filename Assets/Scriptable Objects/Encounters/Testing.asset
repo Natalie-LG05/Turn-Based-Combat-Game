@@ -22,11 +22,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 7a6bb238ebf318649b3467f0dc57b862, type: 2}
   _waves:
   - _enemies:
-    - _level: 3
-      enemyData: {fileID: 11400000, guid: 56814c1c6d93d2a498966674adc0bc31, type: 2}
     - _level: 5
       enemyData: {fileID: 11400000, guid: 56814c1c6d93d2a498966674adc0bc31, type: 2}
-    - _level: 3
-      enemyData: {fileID: 11400000, guid: f685163ae6b99fe40aec5e781b00f8d4, type: 2}
     - _level: 5
       enemyData: {fileID: 11400000, guid: f685163ae6b99fe40aec5e781b00f8d4, type: 2}

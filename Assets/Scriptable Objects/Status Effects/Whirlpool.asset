@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::StatusEffectData
   _name: Whirlpool
   _id: whirlpool
-  _description: Speed is decreased by {x}%.
+  _description: Speed is decreased by {d}%.
   _type: 1
   _iconColor: {r: 0.10539693, g: 0.12216551, b: 0.4264151, a: 1}
   _isPermanent: 0

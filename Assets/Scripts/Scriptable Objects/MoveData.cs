@@ -9,8 +9,8 @@ public class MoveData : ScriptableObject
     [SerializeField, TextArea] protected string _description;
 
     [SerializeField] protected MoveType _type;
-    [SerializeField] protected MoveElement _element;
     [SerializeField] protected List<MoveCategory> _categories;
+    [SerializeField] protected MoveElement _element;
 
     [SerializeField] protected int _power;
     [SerializeField] protected int _accuracy;
@@ -93,7 +93,7 @@ public enum MoveType { MeleePhysical, MeleeEnhanced, RangedPhysical, RangedEnhan
 
 public enum MoveElement { Normal, Poison, Twilight, Abyss }
 
-public enum MoveCategory { Attack, Buff, Debuff }
+public enum MoveCategory { Attack, Buff, Debuff, Heal }
 
 public enum MoveTarget { SingleOther, SingleAlly, SingleEnemy, SingleAny, User, UserTeam, EnemyTeam, AnyTeam, OppositeTeam, AllOther, All }
 
@@ -105,11 +105,17 @@ public class MoveEffect
     [SerializeField, Tooltip("The base strength of this effect")] protected int _power;
     [SerializeField] protected MoveElement _element;
 
+    [SerializeField] protected bool _alwaysHitsSelf;
+    [SerializeField] protected bool _alwaysHits;
+
     public MoveTarget Targets { get => _targets; }
     public int Accuracy { get => _accuracy; }
     /// <summary>The base strength of this effect.</summary>
     public int Power { get => _power; }
     public MoveElement Element { get => _element; }
+
+    public bool AlwaysHitsSelf { get => _alwaysHitsSelf; }
+    public bool AlwaysHits { get => _alwaysHits; }
 }
 
 [System.Serializable]

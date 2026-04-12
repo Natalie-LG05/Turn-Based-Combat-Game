@@ -6603,10 +6603,6 @@ MonoBehaviour:
   _partyMembers:
   - _level: 5
     partyMemberData: {fileID: 11400000, guid: 6d007893202b48f47955c5790493674e, type: 2}
-  - _level: 5
-    partyMemberData: {fileID: 11400000, guid: 6d007893202b48f47955c5790493674e, type: 2}
-  - _level: 5
-    partyMemberData: {fileID: 11400000, guid: 6d007893202b48f47955c5790493674e, type: 2}
 --- !u!1 &1986164648
 GameObject:
   m_ObjectHideFlags: 0

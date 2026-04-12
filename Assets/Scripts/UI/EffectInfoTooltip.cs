@@ -1,3 +1,4 @@
+using NUnit.Framework.Internal;
 using TMPro;
 using UnityEngine;
 
@@ -16,6 +17,10 @@ public class EffectInfoTooltip : Tooltip
 
         nameText.text = effect.StatusEffectData.Name;
         durationText.text = $"{(effect.StatusEffectData.IsPermanent ? "-" : effect.Duration)} Turns";
-        descriptionText.text = effect.StatusEffectData.Description.Replace("{x}", effect.Power.ToString());
+
+        string description = effect.StatusEffectData.Description;
+        description = description.Replace("{i}", effect.BuffPower.ToString());
+        description = description.Replace("{d}", effect.DebuffPower.ToString());
+        descriptionText.text = description;
     }
 }
