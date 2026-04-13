@@ -165,9 +165,10 @@ public class MoveEffect
 [System.Serializable]
 public class MoveDamageEffect : MoveEffect
 {
-    /// <summary>How many times this effect deals its damage.</summary>
-    [SerializeField, Min(1)] private int _hits;
+    
+    [SerializeField, Min(1), Tooltip("How many times this effect deals its damage.")] private int _hits;
 
+    /// <summary>How many times this effect deals its damage.</summary>
     public int Hits { get => _hits; }
 }
 

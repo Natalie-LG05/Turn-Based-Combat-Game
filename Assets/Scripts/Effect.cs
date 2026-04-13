@@ -2,6 +2,7 @@ using UnityEngine;
 
 public class Effect
 {
+    /// <summary>Triggered when this effect is applied (status effect only).</summary>
     public System.Action<CharacterInstance, StatusEffectInstance> OnApply { get; set; }
     public System.Action<CharacterInstance, StatusEffectInstance> OnExpire { get; set; }
     public System.Action<CharacterInstance, StatusEffectInstance> OnRemove { get; set; }

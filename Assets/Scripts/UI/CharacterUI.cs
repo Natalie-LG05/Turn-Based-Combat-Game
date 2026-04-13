@@ -54,6 +54,7 @@ public class CharacterUI : MonoBehaviour
         int newHP = Character.CurrentHP;
         int maxHP = Character.MaxHP;
 
+        // check if the character is taking damage or healing since they require slightly different code
         if (newHP < curHPVal)
         {
             float changeAmt = curHPVal - newHP;
@@ -74,7 +75,7 @@ public class CharacterUI : MonoBehaviour
             }
         }
 
-            SetHealthBar(newHP, maxHP);
+        SetHealthBar(newHP, maxHP);
         SetHealthText(newHP, maxHP);
     }
 
@@ -136,15 +137,11 @@ public class CharacterUI : MonoBehaviour
                 Destroy(obj);
             effectIcons.Clear();
         }
-        if (effects.Count > 0)
-            effects.Clear();
+        effects.Clear();
         
-        if (statusEffects.Count > 0)
+        foreach (StatusEffectInstance effect in statusEffects)
         {
-            foreach (StatusEffectInstance effect in statusEffects)
-            {
-                NewEffectIcon(effect);
-            }
+            NewEffectIcon(effect);
         }
     }
 
@@ -152,13 +149,14 @@ public class CharacterUI : MonoBehaviour
     {
         if (effects.Count < 5)
         {
+            // If there are less than 5 effects already, then add an icon along with the new effect
             GameObject icon = Instantiate(effectIconPrefab, effectIconContainer);
             effectIcons.Add(icon);
             effects.Add(effect);
             icon.GetComponent<StatusEffectIcon>().StatusEffect = effect;
         } else
         {
-            // If the 6th effect is being added, swap the 5th icon with the +1 icon
+            // If the 6th effect is being added, swap the 5th icon with the +x icon
             if (effects.Count == 5)
             {
                 // Remove the icon for the 5th effect
@@ -169,13 +167,13 @@ public class CharacterUI : MonoBehaviour
                 // Add the +1 icon
                 GameObject newIcon = Instantiate(effectListIconPrefab, effectIconContainer);
 
-                // Add the new effect to the list, and put all effects after the fourth into the +1 icon
+                // Add the new effect to the list, and put all effects after the fourth into the +x icon
                 effects.Add(effect);
                 effectIcons.Add(newIcon);
                 newIcon.GetComponent<StatusEffectListIcon>().Effects = effects.GetRange(4, effects.Count - 4);
             } else
             {
-                // There are already 6+ effects, so there should already be a +1 icon, so just update the effects shown by its tooltip
+                // There are already 6+ effects, so there should already be a +x icon, so just update the effects shown by its tooltip
                 effects.Add(effect);
                 effectIcons[4].GetComponent<StatusEffectListIcon>().Effects = effects.GetRange(4, effects.Count - 4);
             }

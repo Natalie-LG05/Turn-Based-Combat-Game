@@ -38,6 +38,7 @@ public class Hoverable : MonoBehaviour, IPointerEnterHandler, IPointerExitHandle
     {
         Hover();
 
+        // only show the tooltip when hovered for a certain amount of time as to not show it if the user is just moving their mouse past the hoverable
         if (tooltip != null) Invoke("ShowTooltip", tooltipShowDelay);
     }
 

@@ -16,11 +16,13 @@ public class PartyMemberSelectionUI : MonoBehaviour
 
     public void SetParty(List<PartyMemberInstance> party, bool partyMemberDiedThisTurn)
     {
+        // clear old data
         foreach (GameObject partyMemberUI in partyMemberUIs)
             Destroy(partyMemberUI);
         partyMemberUIs.Clear();
 
         NewPartyMemberUI(party[0], true);
+        // if a party member died this turn, only the first party member is active, otherwise the first two are active
         if (!partyMemberDiedThisTurn)
         {
             if (party.Count > 1) NewPartyMemberUI(party[1], true);

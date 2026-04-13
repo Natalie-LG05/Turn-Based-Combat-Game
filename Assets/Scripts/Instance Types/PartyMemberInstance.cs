@@ -18,6 +18,7 @@ public class PartyMemberInstance : CharacterInstance
 
     public override void Init()
     {
+        // upcast party member data into character data and assign it before initializing to avoid errors
         _characterData = _partyMemberData;
         base.Init();
     }

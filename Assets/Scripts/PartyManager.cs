@@ -11,6 +11,7 @@ public class PartyManager : MonoBehaviour
 
     private void OnValidate()
     {
+        // the party can only have up to four party members in it
         if (_partyMembers.Count > 4)
             _partyMembers.RemoveRange(4, _partyMembers.Count - 4);
     }
@@ -29,8 +30,6 @@ public class PartyManager : MonoBehaviour
     private void InitializePartyMembers()
     {
         foreach (PartyMemberInstance partyMember in _partyMembers)
-        {
             partyMember.Init();
-        }
     }
 }

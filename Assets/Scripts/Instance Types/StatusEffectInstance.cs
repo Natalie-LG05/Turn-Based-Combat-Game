@@ -5,7 +5,6 @@ public class StatusEffectInstance
     private StatusEffectData _statusEffectData;
     private int _duration;
     private float _power;
-    private float _debuffPower;
 
     private CharacterInstance _sourceCharacter;
     private CharacterInstance _character;

@@ -17,12 +17,10 @@ public class TurnOrderUI : MonoBehaviour
     
     public void SetTurnOrder(Queue<CharacterInstance> turnQueue)
     {
-        if (characterIcons.Count > 0)
-        {
-            foreach (GameObject icon in characterIcons)
-                Destroy(icon);
-            characterIcons.Clear();
-        }
+        // remove old data
+        foreach (GameObject icon in characterIcons)
+            Destroy(icon);
+        characterIcons.Clear();
 
         if (turnQueue.Count > 0)
         {
@@ -48,8 +46,8 @@ public class TurnOrderUI : MonoBehaviour
 
         if (characterIcons.Count > 4)
         {
-        // Enable the next character icon (now the 5th since one was just deleted) 
-        characterIcons.ElementAt(4).SetActive(true);
+            // Enable the next character icon (now the 5th since one was just deleted) 
+            characterIcons.ElementAt(4).SetActive(true);
         }
     }
 }

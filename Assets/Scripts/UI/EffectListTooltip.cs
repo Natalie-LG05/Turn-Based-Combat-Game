@@ -22,6 +22,7 @@ public class EffectListTooltip : Tooltip
         base.SetTooltipData(sourceObject);
         effects = sourceObject.GetComponent<StatusEffectListIcon>().Effects;
         
+        // clear any existing data
         foreach (GameObject obj in effectInfoUIs)
             Destroy(obj);
         effectInfoUIs.Clear();
@@ -43,6 +44,7 @@ public class EffectListTooltip : Tooltip
     private void NewEffect(StatusEffectInstance effect)
     {
         GameObject effectInfo = Instantiate(effectInfoUIPrefab, effectUIContainer);
+        // prevent Unity screenspace canvas bug that was spawning the object at extreme z positions
         effectInfo.transform.localPosition = new Vector3(effectInfo.transform.localPosition.x, effectInfo.transform.localPosition.y, 0);
         effectInfoUIs.Add(effectInfo);
         effectInfo.GetComponent<EffectInfoUI>().Effect = effect;

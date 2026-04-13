@@ -14,6 +14,8 @@ public class AbilityInfoUI : MonoBehaviour
         set
         {
             _ability = value;
+
+            // update the UI whenever value is set
             nameText.text = _ability.Name;
             descriptionText.text = _ability.Description;
         }

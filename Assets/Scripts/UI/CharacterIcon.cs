@@ -13,6 +13,8 @@ public class CharacterIcon : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
         set
         {
             _character = value;
+
+            // update the UI whenever value is set
             image.sprite = _character.CharacterData.Sprite;
         }
     }

@@ -13,6 +13,8 @@ public class StatusEffectIcon : MonoBehaviour
         set
         {
             _statusEffect = value;
+
+            // update the UI
             image.color = _statusEffect.StatusEffectData.IconColor;
             hoverable.UpdateColors();
         }

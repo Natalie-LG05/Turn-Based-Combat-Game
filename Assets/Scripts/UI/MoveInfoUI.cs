@@ -19,11 +19,13 @@ public class MoveInfoUI : MonoBehaviour
         {
             _move = value;
             nameText.text = _move.Name;
+            descriptionText.text = _move.Description;
+
+            // Show a comma seperated list of these 4 values for each move effect of the selected move
             powerText.text = $"Power: {string.Join(", ", _move.Powers)}";
             accuracyText.text = $"Accuracy: {string.Join(", ", _move.Accuracies)}";
             elementText.text = $"Element: {string.Join(", ", _move.Elements)}";
             hitsText.text = $"Hits: {string.Join(", ", _move.HitsList)}";
-            descriptionText.text = _move.Description;
         }
     }
 }

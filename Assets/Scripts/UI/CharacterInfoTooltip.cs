@@ -32,6 +32,7 @@ public class CharacterInfoTooltip : Tooltip
         character = sourceObject.GetComponentInParent<CharacterUI>().Character;
         SetText(character);
 
+        // clear any data from the previously hovered character
         foreach (GameObject obj in abilityInfoUIs)
             Destroy(obj);
         abilityInfoUIs.Clear();
@@ -55,9 +56,7 @@ public class CharacterInfoTooltip : Tooltip
         if (character.Abilities.Count > 0)
         {
             foreach (AbilityData ability in character.Abilities)
-            {
                 NewAbilityInfo(ability);
-            }
         }
     }
 
@@ -66,9 +65,7 @@ public class CharacterInfoTooltip : Tooltip
         if (character.StatusEffects.Count > 0)
         {
             foreach (StatusEffectInstance effect in character.StatusEffects)
-            {
                 NewEffectInfo(effect);
-            }
         }
     }
 

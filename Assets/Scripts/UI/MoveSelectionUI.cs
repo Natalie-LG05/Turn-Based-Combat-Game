@@ -27,6 +27,7 @@ public class MoveSelectionUI : MonoBehaviour
 
     private void ShowMoveOptions()
     {
+        // clear old data
         foreach (GameObject go in moveOptionUIs)
             Destroy(go);
         moveOptionUIs.Clear();
@@ -34,6 +35,7 @@ public class MoveSelectionUI : MonoBehaviour
         foreach (MoveData move in character.Moveset)
             NewMoveOption(move);
 
+        // select the first move by default
         _moveInfoUI.Move = moveOptionUIs[0].GetComponent<MoveOptionUI>().Move;
     }
 

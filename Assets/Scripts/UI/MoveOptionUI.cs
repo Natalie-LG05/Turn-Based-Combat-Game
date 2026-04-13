@@ -25,6 +25,8 @@ public class MoveOptionUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
         set
         {
             _move = value;
+
+            // update the UI
             nameText.text = _move.Name;
             elementText.text = _move.Element.ToString();
             powerText.text = _move.Power.ToString();

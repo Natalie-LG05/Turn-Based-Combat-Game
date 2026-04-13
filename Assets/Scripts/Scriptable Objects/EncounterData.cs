@@ -29,6 +29,7 @@ public class EncounterData : ScriptableObject
 
     private void OnValidate()
     {
+        // ensure that no wave has more than five enemies
         foreach (EncounterWave wave in _waves)
         {
             wave.OnValidate();
@@ -47,6 +48,7 @@ public class EncounterWave
 
     public void OnValidate()
     {
+        // ensure that no wave has more than five enemies
         if (_enemies.Count > 5)
             _enemies.RemoveRange(5, _enemies.Count - 5);
     }

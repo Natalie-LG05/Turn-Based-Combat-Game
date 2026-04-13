@@ -118,8 +118,9 @@ public class EffectsDB
                     character.RemoveStatusEffect(ability.StatusEffect.Id, false);
                     
                     float healthPercent = ((float)character.CurrentHP / character.MaxHP) * 100;
-                    float power = Mathf.Floor((100 - healthPercent) / 2);
-                    character.ApplyStatusEffect(new StatusEffectInstance(ability.StatusEffect, 99, power, character, character), false);
+                    float power = Mathf.Floor((100 - healthPercent)) / 2f;
+                    if (power > 0)
+                        character.ApplyStatusEffect(new StatusEffectInstance(ability.StatusEffect, 99, power, character, character), false);
                 }
             }
         },

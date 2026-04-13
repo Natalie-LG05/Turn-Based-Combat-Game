@@ -16,19 +16,14 @@ public class TeamUI : MonoBehaviour
 
     public void SetTeam(List<CharacterInstance> characters)
     {
-        // Delete characters (if any)
+        // Delete old characters (if any)
         foreach (GameObject characterUI in characterUIs)
             Destroy(characterUI);
         characterUIs.Clear();
 
-        if (characters.Count > 0)
+        foreach (CharacterInstance character in characters)
         {
-            foreach (CharacterInstance character in characters)
-            {
-                GameObject characterUI = Instantiate(characterUIPrefab, characterUIContainer);
-                characterUIs.Add(characterUI);
-                characterUI.GetComponent<CharacterUI>().SetCharacter(character);
-            }
+            NewCharacter(character);
         }
     }
 
@@ -37,5 +32,17 @@ public class TeamUI : MonoBehaviour
         GameObject charUI = character.CharacterUI.gameObject;
         characterUIs.Remove(charUI);
         Destroy(charUI);
+    }
+
+    public void AddCharacter(CharacterInstance character)
+    {
+        NewCharacter(character);
+    }
+
+    private void NewCharacter(CharacterInstance character)
+    {
+        GameObject characterUI = Instantiate(characterUIPrefab, characterUIContainer);
+        characterUIs.Add(characterUI);
+        characterUI.GetComponent<CharacterUI>().SetCharacter(character);
     }
 }

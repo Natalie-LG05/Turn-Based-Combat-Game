@@ -23,6 +23,7 @@ public class BattleDialogueBox : MonoBehaviour
             yield return new WaitForSeconds(1f / charsPerSec);
         }
 
+        // give the user time to read the dialogue
         yield return new WaitForSeconds(dialogueDuration);
     }
 }

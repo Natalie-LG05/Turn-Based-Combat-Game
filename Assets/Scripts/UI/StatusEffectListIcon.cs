@@ -14,6 +14,8 @@ public class StatusEffectListIcon : MonoBehaviour
         set
         {
             _effects = value;
+
+            // update the UI
             numberText.text = $"+{_effects.Count}";
         }
     }

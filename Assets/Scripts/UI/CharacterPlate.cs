@@ -9,6 +9,8 @@ public class CharacterPlate : MonoBehaviour, IPointerClickHandler
     {
         BattleManager.Instance.TargetOptionClicked(Character);
 
+#if UNITY_EDITOR
         Debug.Log($"{Character.CharacterData.Name} (lvl {Character.Level}) has\nMaxHP: {Character.MaxHP}\nAttack: {Character.Attack}\nSupport: {Character.Support}\nDefense: {Character.Defense}\nSpeed: {Character.Speed}");
+#endif
     }
 }
