@@ -16,7 +16,7 @@ MonoBehaviour:
   _id: fish
   _description: Catch a fish and use it to heal yourself or an ally!
   _type: 2
-  _categories: 03000000
+  _categories: 0b000000
   _element: 0
   _power: 15
   _accuracy: 100

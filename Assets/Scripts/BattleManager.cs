@@ -4,6 +4,7 @@ using System.Linq;
 using UnityEditor.Rendering.LookDev;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using static UnityEngine.GraphicsBuffer;
 
 public enum BattleState { Setup, ActionSelection, MoveSelection, TargetSelection, PartyScreen, ReplaceDeadPartyMember, EnemyTurn, PerformMove, RoundEnd, Busy }
 
@@ -114,7 +115,7 @@ public class BattleManager : MonoBehaviour
 
     public void MoveOptionClicked(MoveData move)
     {
-        if (state == BattleState.MoveSelection )
+        if (state == BattleState.MoveSelection)
         {
             if (move.Target is MoveTarget.User or MoveTarget.UserTeam or MoveTarget.EnemyTeam or MoveTarget.All or MoveTarget.AllOther)
                 StartCoroutine(PlayerMove(move, CurrentCharacter));
@@ -179,7 +180,7 @@ public class BattleManager : MonoBehaviour
             ShowActionSelectionScreen();
             state = BattleState.ActionSelection;
             dialogueBox.SetDialogue($"It is {CurrentCharacter.CharacterData.Name}'s turn, choose an action.");
-        }  
+        }
     }
 
     // Main logic methods
@@ -225,7 +226,7 @@ public class BattleManager : MonoBehaviour
                 if (party.Count > 3) party[3].ApplyStatusEffect(new StatusEffectInstance(effect, 99, 0, null, party[3]), false);
             }
         }
-        
+
         StartRound();
     }
 
@@ -249,8 +250,8 @@ public class BattleManager : MonoBehaviour
 
             if (party.Count > 1)
             {
-            ShowPartyScreen();
-            partyMemberSelectionUI.SetParty(party, partyMemberDiedThisTurn);
+                ShowPartyScreen();
+                partyMemberSelectionUI.SetParty(party, partyMemberDiedThisTurn);
             } else
             {
                 partyMemberDiedThisTurn = false;
@@ -305,7 +306,7 @@ public class BattleManager : MonoBehaviour
     private IEnumerator PlayerSwitch(CharacterInstance oldCharacter, CharacterInstance newCharacter)
     {
         Switch(oldCharacter, newCharacter);
-        
+
         ShowActionSelectionScreen();
 
         yield return dialogueBox.TypeDialogue($"Switched {oldCharacter.CharacterData.Name} with {newCharacter.CharacterData.Name}");
@@ -316,8 +317,64 @@ public class BattleManager : MonoBehaviour
     private IEnumerator EnemyTurn(CharacterInstance currentCharacter)
     {
         state = BattleState.EnemyTurn;
-        yield return UseMove(currentCharacter, playerTeam[Random.Range(0, playerTeam.Count)], currentCharacter.Moveset[Random.Range(0, currentCharacter.Moveset.Count)]);
+        EnemyInstance enemy = enemyTeam.Where(enemy => enemy.uniqueCharacterId == currentCharacter.uniqueCharacterId).First();
+
+        EnemyAction chosenAction = DetermineEnemyAction(enemy);
+        switch (chosenAction)
+        {
+            case EnemyAction.Attack:
+                yield return EnemyAttack(enemy);
+                break;
+            case EnemyAction.Buff:
+                yield return EnemyBuff(enemy);
+                break;
+            case EnemyAction.Debuff:
+                yield return EnemyDebuff(enemy);
+                break;
+            case EnemyAction.Heal:
+                yield return EnemyHeal(enemy);
+                break;
+        }
+
         EndTurn();
+    }
+
+    private IEnumerator EnemyAttack(EnemyInstance enemy)
+    {
+        MoveData move = enemy.StrongestAttackMove();
+        CharacterInstance target = EnemyChooseTarget(enemy, EnemyAction.Attack, move);
+        yield return UseMove(enemy, target, move);
+    }
+
+    private IEnumerator EnemyBuff(EnemyInstance enemy)
+    {
+        List<MoveData> moveOptions = enemy.UsefulBuffMoves(enemyTeam);
+        MoveData move = moveOptions[Random.Range(0, moveOptions.Count)];
+        CharacterInstance target = EnemyChooseTarget(enemy, EnemyAction.Buff, move);
+        StatusEffectData status = enemy.RandomUsefulStatusEffect(target, move);
+        move = enemy.StrongestStatusMove(target, status);
+
+        yield return UseMove(enemy, target, move);
+    }
+
+    private IEnumerator EnemyDebuff(EnemyInstance enemy)
+    {
+        List<MoveData> moveOptions = enemy.UsefulDebuffMoves(playerTeam.ConvertAll(chr => (CharacterInstance)chr));
+        MoveData move = moveOptions[Random.Range(0, moveOptions.Count)];
+        CharacterInstance target = EnemyChooseTarget(enemy, EnemyAction.Debuff, move);
+        StatusEffectData status = enemy.RandomUsefulStatusEffect(target, move);
+        move = enemy.StrongestStatusMove(target, status);
+
+        yield return UseMove(enemy, target, move);
+    }
+
+    private IEnumerator EnemyHeal(EnemyInstance enemy)
+    {
+        List<MoveData> moveOptions = enemy.UsefulHealingMoves(enemyTeam);
+        MoveData move = moveOptions[Random.Range(0, moveOptions.Count)];
+        CharacterInstance target = EnemyChooseTarget(enemy, EnemyAction.Heal, move);
+
+        yield return UseMove(enemy, target, move);
     }
 
     private void NewEnemyWave()
@@ -360,7 +417,7 @@ public class BattleManager : MonoBehaviour
             }
         }
 
-        foreach (MoveStatusEffect effect in move.StatusEffects)
+        foreach (MoveStatusEffect effect in move.MoveStatusEffects)
         {
             foreach (CharacterInstance character in GetEffectTargets(effect.Targets, CurrentCharacter, target))
             {
@@ -400,7 +457,7 @@ public class BattleManager : MonoBehaviour
         turnQueue.Dequeue();
         turnOrderUI.NextTurn();
 
-        if (CheckDeadCharacters()) 
+        if (CheckDeadCharacters())
         {
             if (playerTeam.Count > 0 && encounterManager.CurrentEncounter.Waves.Count() > wave)
                 NewEnemyWave();
@@ -414,6 +471,50 @@ public class BattleManager : MonoBehaviour
     }
 
     // Helper methods
+    private CharacterInstance EnemyChooseTarget(EnemyInstance enemy, EnemyAction action, MoveData move)
+    {
+        if (move.Target is MoveTarget.User or MoveTarget.UserTeam or MoveTarget.EnemyTeam or MoveTarget.All or MoveTarget.AllOther)
+            return enemy;
+
+        switch (action)
+        {
+            case EnemyAction.Attack:
+                return playerTeam[Random.Range(0, playerTeam.Count)];
+            case EnemyAction.Buff:
+                List<EnemyInstance> buffTargetOptions = enemy.AlliesNeedingBuff(enemyTeam, move);
+                return buffTargetOptions[Random.Range(0, buffTargetOptions.Count)];
+            case EnemyAction.Debuff:
+                List<CharacterInstance> debuffTargetOptions = enemy.PlayerCharactersNeedingDebuff(playerTeam.ConvertAll(chr => (CharacterInstance)chr), move);
+                return debuffTargetOptions[Random.Range(0, debuffTargetOptions.Count)];
+            case EnemyAction.Heal:
+                List<EnemyInstance> healTargetOptions = enemy.AlliesNeedingHealing(enemyTeam);
+                return healTargetOptions[Random.Range(0, healTargetOptions.Count)];
+        }
+        return null;
+    }
+
+    private EnemyAction DetermineEnemyAction(EnemyInstance enemy)
+    {
+        // Determine possible actions for the enemy
+        Dictionary<EnemyAction, int> actions = new Dictionary<EnemyAction, int>() { { EnemyAction.Attack, enemy.EnemyData.AttackChance } };
+        if (enemy.UsefulBuffMoves(enemyTeam).Count > 0) actions.Add(EnemyAction.Buff, enemy.EnemyData.BuffChance);
+        if (enemy.UsefulDebuffMoves(playerTeam.ConvertAll(chr => (CharacterInstance)chr)).Count > 0) actions.Add(EnemyAction.Debuff, enemy.EnemyData.DebuffChance);
+        if (enemy.UsefulHealingMoves(enemyTeam).Count > 0) actions.Add(EnemyAction.Heal, enemy.EnemyData.HealChance);
+
+        // Randomly choose one of the valid actions based on the weight of each
+        int totalWeight = actions.Values.Sum();
+        int randNum = Random.Range(0, totalWeight);
+        foreach (EnemyAction action in actions.Keys)
+        {
+            if (randNum < actions[action])
+            {
+                return action;
+            }
+            randNum -= actions[action];
+        }
+        return EnemyAction.Attack; // In case that somehow fails, just default to attacking
+    }
+
     private bool CheckIfMoveEffectHits(CharacterInstance user, CharacterInstance target, MoveEffect effect)
     {
         if (effect.AlwaysHits)

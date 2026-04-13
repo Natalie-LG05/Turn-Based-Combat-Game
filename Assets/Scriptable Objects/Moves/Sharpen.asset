@@ -22,7 +22,7 @@ MonoBehaviour:
   _accuracy: 100
   _target: 4
   _damageEffects: []
-  _statusEffects:
+  _moveStatusEffects:
   - _targets: 4
     _accuracy: 100
     _power: 30

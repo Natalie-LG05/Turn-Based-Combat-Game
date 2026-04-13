@@ -18,7 +18,7 @@ MonoBehaviour:
     vortex while slowing down the other. Inflicts high damage on the selected team
     and Speed Down on the other.
   _type: 4
-  _categories: 0000000002000000
+  _categories: 0000000006000000
   _element: 3
   _power: 120
   _accuracy: 100
@@ -31,13 +31,14 @@ MonoBehaviour:
     _alwaysHitsSelf: 1
     _alwaysHits: 0
     _hits: 6
-  _statusEffects:
+  _moveStatusEffects:
   - _targets: 8
     _accuracy: 100
     _power: 100
-    _element: 3
+    _element: 0
     _alwaysHitsSelf: 1
     _alwaysHits: 1
     _duration: 5
     _statusEffects:
     - {fileID: 11400000, guid: 7dfc4b29152b56848a3577c6854d44c2, type: 2}
+  _healEffects: []

@@ -232,12 +232,6 @@ public class CharacterInstance
         StatModifiers[stat].RemoveAll(mod => mod.SourceId == sourceId);
     }
 
-    protected void SetHP(int hp)
-    {
-        _currentHP = hp >= 0 ? hp : 0;
-        CharacterUI.UpdateHealth();
-    }
-
     public void TakeDamage(int damage)
     {
         foreach (StatusEffectInstance status in StatusEffects)
@@ -269,6 +263,27 @@ public class CharacterInstance
             status.Effects.OnAfterHPChanged?.Invoke(this, status, null);
         foreach (AbilityData ability in Abilities)
             ability.Effects.OnAfterHPChanged?.Invoke(this, null, ability);
+    }
+
+    public bool HasAllMoveStatusEffects(MoveData move)
+    {
+        foreach (StatusEffectData status in move.StatusEffects.Keys)
+        {
+            if (!HasStatusEffect(status.Id)) return false;
+        }
+        return true;
+    }
+
+    public bool HasStatusEffect(string statusId)
+    {
+        return StatusEffects.Exists(status => status.StatusEffectData.Id == statusId);
+    }
+
+    // Helper methods for use inside this class
+    protected void SetHP(int hp)
+    {
+        _currentHP = hp >= 0 ? hp : 0;
+        CharacterUI.UpdateHealth();
     }
 
     protected void InitializeAdditionalStats()

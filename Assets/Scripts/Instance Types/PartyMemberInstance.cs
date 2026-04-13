@@ -3,7 +3,7 @@ using UnityEngine;
 [System.Serializable]
 public class PartyMemberInstance : CharacterInstance
 {
-    [SerializeField] private PartyMemberData partyMemberData;
+    [SerializeField] private PartyMemberData _partyMemberData;
 
     //TODO: need to make equipable items first, then can uncomment the below code and expand on it
     //[SerializeField] private Weapon _weapon;
@@ -12,11 +12,13 @@ public class PartyMemberInstance : CharacterInstance
     //[SerializeField] private Charm[] _charms;
     //[SerializeField] private MoveBooster _moveBooster;
 
-    //// stat boosts
+    // stat boosts
+
+    public PartyMemberData PartyMemberData { get => _partyMemberData; }
 
     public override void Init()
     {
-        _characterData = partyMemberData;
+        _characterData = _partyMemberData;
         base.Init();
     }
 }

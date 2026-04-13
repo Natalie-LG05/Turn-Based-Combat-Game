@@ -18,11 +18,11 @@ MonoBehaviour:
   _type: 4
   _categories: 01000000
   _element: 0
-  _power: 15
+  _power: 30
   _accuracy: 100
   _target: 4
   _damageEffects: []
-  _statusEffects:
+  _moveStatusEffects:
   - _targets: 4
     _accuracy: 100
     _power: 30
@@ -32,3 +32,4 @@ MonoBehaviour:
     _duration: 3
     _statusEffects:
     - {fileID: 11400000, guid: 29078210158b47044bc015d040950bd1, type: 2}
+  _healEffects: []
