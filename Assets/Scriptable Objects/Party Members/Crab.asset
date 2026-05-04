@@ -36,12 +36,6 @@ MonoBehaviour:
     _level: 3
   - _moveData: {fileID: 11400000, guid: 0b8501ffd83419a4cb135526f8460e53, type: 2}
     _level: 5
-  - _moveData: {fileID: 11400000, guid: c78128d7ad2598a439d012c8791e004c, type: 2}
-    _level: 5
-  - _moveData: {fileID: 11400000, guid: 87601bc30b06e3343a73c2d1baac1f5c, type: 2}
-    _level: 5
-  - _moveData: {fileID: 11400000, guid: a00368dcd41905749ab4e351d43c4e8f, type: 2}
-    _level: 5
   _abilityLearnset:
   - _abilityData: {fileID: 11400000, guid: 14c4573371e5a6e4cba439aa1db454f4, type: 2}
     _level: 3

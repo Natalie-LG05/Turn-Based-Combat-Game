@@ -27,42 +27,42 @@ MonoBehaviour:
       _isPlayerTeam: 0
       baseStatPoints: 64
       additionalStatPoints: 0
-      _uniqueCharacterId: 8baabec6-527e-4a1a-a939-b6ca95d05926
+      _uniqueCharacterId: 7de6581d-3ee9-41d1-a404-e5b10819b396
       _enemyData: {fileID: 11400000, guid: 56814c1c6d93d2a498966674adc0bc31, type: 2}
     - _characterData: {fileID: 11400000, guid: f685163ae6b99fe40aec5e781b00f8d4, type: 2}
-      _level: 1
+      _level: 4
       _isPlayerTeam: 0
-      baseStatPoints: 50
+      baseStatPoints: 71
       additionalStatPoints: 0
-      _uniqueCharacterId: f25a2593-3154-468d-8508-5ce13f64abd7
-      _enemyData: {fileID: 11400000, guid: f685163ae6b99fe40aec5e781b00f8d4, type: 2}
+      _uniqueCharacterId: 70be5dc0-f122-40b7-853c-9d150c0af7a4
+      _enemyData: {fileID: 11400000, guid: 56814c1c6d93d2a498966674adc0bc31, type: 2}
   - _enemies:
-    - _characterData: {fileID: 0}
+    - _characterData: {fileID: 11400000, guid: f685163ae6b99fe40aec5e781b00f8d4, type: 2}
       _level: 5
       _isPlayerTeam: 0
-      baseStatPoints: 0
+      baseStatPoints: 78
       additionalStatPoints: 0
-      _uniqueCharacterId: 
+      _uniqueCharacterId: dcc17bc9-4486-490c-a411-a18ed90ba570
       _enemyData: {fileID: 11400000, guid: f685163ae6b99fe40aec5e781b00f8d4, type: 2}
-    - _characterData: {fileID: 0}
+    - _characterData: {fileID: 11400000, guid: f685163ae6b99fe40aec5e781b00f8d4, type: 2}
       _level: 5
       _isPlayerTeam: 0
-      baseStatPoints: 0
+      baseStatPoints: 78
       additionalStatPoints: 0
-      _uniqueCharacterId: 
+      _uniqueCharacterId: fb5fc999-c0d0-4eff-bf56-f6472949a7f5
       _enemyData: {fileID: 11400000, guid: f685163ae6b99fe40aec5e781b00f8d4, type: 2}
   - _enemies:
-    - _characterData: {fileID: 0}
+    - _characterData: {fileID: 11400000, guid: 56814c1c6d93d2a498966674adc0bc31, type: 2}
       _level: 6
       _isPlayerTeam: 0
-      baseStatPoints: 0
+      baseStatPoints: 85
       additionalStatPoints: 0
-      _uniqueCharacterId: 
+      _uniqueCharacterId: 75c00703-2d9e-4674-9ff5-e9b2cd0d1c87
       _enemyData: {fileID: 11400000, guid: 56814c1c6d93d2a498966674adc0bc31, type: 2}
-    - _characterData: {fileID: 0}
+    - _characterData: {fileID: 11400000, guid: f685163ae6b99fe40aec5e781b00f8d4, type: 2}
       _level: 7
       _isPlayerTeam: 0
-      baseStatPoints: 0
+      baseStatPoints: 92
       additionalStatPoints: 0
-      _uniqueCharacterId: 
+      _uniqueCharacterId: 512ca0d7-84cd-417a-b011-4f5a2e2cac3e
       _enemyData: {fileID: 11400000, guid: f685163ae6b99fe40aec5e781b00f8d4, type: 2}

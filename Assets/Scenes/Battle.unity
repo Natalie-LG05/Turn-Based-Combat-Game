@@ -6602,14 +6602,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Party
   _partyMembers:
   - _characterData: {fileID: 0}
-    _level: 6
-    _isPlayerTeam: 0
-    baseStatPoints: 0
-    additionalStatPoints: 0
-    _uniqueCharacterId: 
-    _partyMemberData: {fileID: 11400000, guid: 6d007893202b48f47955c5790493674e, type: 2}
-  - _characterData: {fileID: 0}
-    _level: 5
+    _level: 3
     _isPlayerTeam: 0
     baseStatPoints: 0
     additionalStatPoints: 0
@@ -6623,7 +6616,14 @@ MonoBehaviour:
     _uniqueCharacterId: 
     _partyMemberData: {fileID: 11400000, guid: 6d007893202b48f47955c5790493674e, type: 2}
   - _characterData: {fileID: 0}
-    _level: 3
+    _level: 5
+    _isPlayerTeam: 0
+    baseStatPoints: 0
+    additionalStatPoints: 0
+    _uniqueCharacterId: 
+    _partyMemberData: {fileID: 11400000, guid: 6d007893202b48f47955c5790493674e, type: 2}
+  - _characterData: {fileID: 0}
+    _level: 6
     _isPlayerTeam: 0
     baseStatPoints: 0
     additionalStatPoints: 0
