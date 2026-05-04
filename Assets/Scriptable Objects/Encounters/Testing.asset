@@ -22,7 +22,47 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 7a6bb238ebf318649b3467f0dc57b862, type: 2}
   _waves:
   - _enemies:
-    - _level: 7
+    - _characterData: {fileID: 11400000, guid: 56814c1c6d93d2a498966674adc0bc31, type: 2}
+      _level: 3
+      _isPlayerTeam: 0
+      baseStatPoints: 64
+      additionalStatPoints: 0
+      _uniqueCharacterId: 8baabec6-527e-4a1a-a939-b6ca95d05926
       _enemyData: {fileID: 11400000, guid: 56814c1c6d93d2a498966674adc0bc31, type: 2}
-    - _level: 5
+    - _characterData: {fileID: 11400000, guid: f685163ae6b99fe40aec5e781b00f8d4, type: 2}
+      _level: 1
+      _isPlayerTeam: 0
+      baseStatPoints: 50
+      additionalStatPoints: 0
+      _uniqueCharacterId: f25a2593-3154-468d-8508-5ce13f64abd7
+      _enemyData: {fileID: 11400000, guid: f685163ae6b99fe40aec5e781b00f8d4, type: 2}
+  - _enemies:
+    - _characterData: {fileID: 0}
+      _level: 5
+      _isPlayerTeam: 0
+      baseStatPoints: 0
+      additionalStatPoints: 0
+      _uniqueCharacterId: 
+      _enemyData: {fileID: 11400000, guid: f685163ae6b99fe40aec5e781b00f8d4, type: 2}
+    - _characterData: {fileID: 0}
+      _level: 5
+      _isPlayerTeam: 0
+      baseStatPoints: 0
+      additionalStatPoints: 0
+      _uniqueCharacterId: 
+      _enemyData: {fileID: 11400000, guid: f685163ae6b99fe40aec5e781b00f8d4, type: 2}
+  - _enemies:
+    - _characterData: {fileID: 0}
+      _level: 6
+      _isPlayerTeam: 0
+      baseStatPoints: 0
+      additionalStatPoints: 0
+      _uniqueCharacterId: 
+      _enemyData: {fileID: 11400000, guid: 56814c1c6d93d2a498966674adc0bc31, type: 2}
+    - _characterData: {fileID: 0}
+      _level: 7
+      _isPlayerTeam: 0
+      baseStatPoints: 0
+      additionalStatPoints: 0
+      _uniqueCharacterId: 
       _enemyData: {fileID: 11400000, guid: f685163ae6b99fe40aec5e781b00f8d4, type: 2}

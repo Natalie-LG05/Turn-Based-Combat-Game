@@ -16,5 +16,12 @@ MonoBehaviour:
   _id: hard_shell
   _description: Defense increased by {i}%.
   _type: 0
+  _categories: 06000000
   _iconColor: {r: 0.6784314, g: 0.6784314, b: 0.6784314, a: 1}
   _isPermanent: 1
+  _statIncreases:
+  - _stat: 3
+    _multiplier: 1
+    _fixedStrength: 0
+    _isStrengthFixed: 0
+  _statDecreases: []

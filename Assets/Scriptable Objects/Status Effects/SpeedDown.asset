@@ -16,5 +16,12 @@ MonoBehaviour:
   _id: speed_down
   _description: Speed is decreased by {d}%.
   _type: 1
+  _categories: 09000000
   _iconColor: {r: 1, g: 1, b: 1, a: 1}
   _isPermanent: 0
+  _statIncreases: []
+  _statDecreases:
+  - _stat: 4
+    _multiplier: 1
+    _fixedStrength: 0
+    _isStrengthFixed: 0

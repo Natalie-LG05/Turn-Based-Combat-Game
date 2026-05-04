@@ -2,6 +2,9 @@ using System.Collections;
 using TMPro;
 using UnityEngine;
 
+/// <summary>
+/// Handles showing dialogue in the dialogue box. Dialogue can either be instantly set, or smoothly typed out.
+/// </summary>
 public class BattleDialogueBox : MonoBehaviour
 {
     [SerializeField] private int charsPerSec;
@@ -14,6 +17,10 @@ public class BattleDialogueBox : MonoBehaviour
         dialogueText.text = dialogue;
     }
 
+    /// <summary>
+    /// Type the dialogue instead of just instantly setting it.
+    /// </summary>
+    /// <param name="dialogue">The dialogue to show.</param>
     public IEnumerator TypeDialogue(string dialogue)
     {
         dialogueText.text = "";

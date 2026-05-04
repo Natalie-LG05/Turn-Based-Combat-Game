@@ -1,11 +1,14 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary>
+/// A scriptable object that contains the data for an encounter.
+/// </summary>
 [CreateAssetMenu(fileName = "NewEncounterData", menuName = "ScriptableObjects/Encounter Data", order = -1000)]
 public class EncounterData : ScriptableObject
 {
     [SerializeField] private string _name;
-    [SerializeField] private string _id;
+    [SerializeField, Tooltip("The unique string id of this encounter.")] private string _id;
     [SerializeField, TextArea] private string _description;
 
     [SerializeField] private EncounterType _type;
@@ -17,6 +20,7 @@ public class EncounterData : ScriptableObject
     //TODO: Encounter rewards
 
     public string Name { get => _name; }
+    /// <summary>Gets the unique string id of this encounter</summary>
     public string Id { get => _id; }
     public string Description { get => _description; }
 
@@ -39,6 +43,9 @@ public class EncounterData : ScriptableObject
 
 public enum EncounterType { Normal, SingleWild, DoubleWild, Hard, Dungeon }
 
+/// <summary>
+/// A class that represents a wave in an encounter, containing a list of up to five enemies.
+/// </summary>
 [System.Serializable]
 public class EncounterWave
 {

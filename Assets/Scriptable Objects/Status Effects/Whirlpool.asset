@@ -16,5 +16,12 @@ MonoBehaviour:
   _id: whirlpool
   _description: Speed is decreased by {d}%.
   _type: 1
+  _categories: 09000000
   _iconColor: {r: 0.10539693, g: 0.12216551, b: 0.4264151, a: 1}
   _isPermanent: 0
+  _statIncreases: []
+  _statDecreases:
+  - _stat: 4
+    _multiplier: 1
+    _fixedStrength: 0
+    _isStrengthFixed: 0

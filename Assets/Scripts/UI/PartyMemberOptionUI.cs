@@ -3,6 +3,9 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
+/// <summary>
+/// A UI representing and showing information about a party member. Contains the same information as a CharacterUI. Additionaly, communicates back to the battle manager when its party member is clicked.
+/// </summary>
 public class PartyMemberOptionUI : CharacterUI, IPointerEnterHandler, IPointerExitHandler, IPointerClickHandler
 {
     [SerializeField] private Color normalColor;
@@ -33,6 +36,10 @@ public class PartyMemberOptionUI : CharacterUI, IPointerEnterHandler, IPointerEx
         if (!active) BattleManager.Instance.PartyMemberOptionClicked(Character);
     }
 
+    /// <summary>
+    /// Set the character for this UI to display info about.
+    /// </summary>
+    /// <param name="characterInstance">The character for this UI to display info about.</param>
     public void SetCharacter(CharacterInstance characterInstance, bool active)
     {
         if (effectIcons == null) effectIcons = new List<GameObject>();

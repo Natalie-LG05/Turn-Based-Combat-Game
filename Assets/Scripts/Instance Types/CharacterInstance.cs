@@ -2,69 +2,104 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
+/// <summary>
+/// Represents an instance of a character, which is based off of an EnemyData or PartyMemberData.
+/// </summary>
 [System.Serializable]
 public class CharacterInstance
 {
-    protected CharacterData _characterData;
+    [SerializeField, HideInInspector] protected CharacterData _characterData;
     protected CharacterUI _characterUI;
-
-    protected static int instanceCount;
 
     [SerializeField, Min(1)] protected int _level;
 
-    protected bool _isPlayerTeam;
+    [SerializeField, HideInInspector] protected bool _isPlayerTeam;
 
-    protected int totalStatPoints;
-    protected int additionalStatPoints;
+    /// <summary>The base amount of stat points this character has at its current level (not to be confused with CharacterData.BaseStatPoints).</summary>
+    [SerializeField, HideInInspector] protected int baseStatPoints;
+    /// <summary>The amount of additional stat points this character has.</summary>
+    [SerializeField, HideInInspector] protected int additionalStatPoints;
 
     protected int _currentHP;
 
+    [SerializeField, HideInInspector] protected string _uniqueCharacterId;
+
+    protected Dictionary<Stat, int> _stats;
+    protected Dictionary<Stat, int> _additionalStats;
+
+    protected List<MoveData> _moveset;
+    protected List<AbilityData> _abilities;
+
+    /// <summary>Gets the character data this character instance is based off of.</summary>
     public CharacterData CharacterData { get => _characterData; }
+    /// <summary>Gets or sets the characterUI assigned to display info about this character.</summary>
     public CharacterUI CharacterUI { get => _characterUI; set => _characterUI = value; }
 
+    /// <summary>Gets the character's level.</summary>
     public int Level { get => _level; }
 
+    /// <summary>Gets or sets whether or not the character is on the player's team.</summary>
     public bool IsPlayerTeam { get => _isPlayerTeam; set => _isPlayerTeam = value; }
 
+    /// <summary>Gets the current HP of the character.</summary>
     public int CurrentHP { get => _currentHP; }
 
+    /// <summary>Gets a random value. Used to break speed ties when determining turn order.</summary>
     public float SpeedTieBreaker { get => Random.value; }
 
-    public int uniqueCharacterId { get; private set; }
+    /// <summary>Gets the character's unique id.</summary>
+    public string UniqueCharacterId { get => _uniqueCharacterId; }
 
+    /// <summary>Gets the status effects that this character currently has on it.</summary>
     public List<StatusEffectInstance> StatusEffects { get; private set; }
 
-    public Dictionary<Stat, int> Stats { get; private set; }
+    /// <summary>Gets a dictionary containing the current base stats of the character at its current level.</summary>
+    public Dictionary<Stat, int> Stats { get => _stats; }
+    /// <summary>Gets a dictionary containing the current additional stats of the character.</summary>
+    public Dictionary<Stat, int> AdditionalStats { get => _additionalStats; }
+    /// <summary>Gets a dictionary containing the temporary mid-combat stat modifiers the character has.</summary>
     public Dictionary<Stat, List<StatModifier>> StatModifiers { get; private set; }
-    public Dictionary<Stat, int> AdditionalStats { get; private set; }
 
+    /// <summary>Gets the current MaxHP stat of the character, taking into account modifiers.</summary>
     public int MaxHP { get { return GetStat(Stat.MaxHP); } }
+    /// <summary>Gets the current Attack stat of the character, taking into account modifiers.</summary>
     public int Attack { get { return GetStat(Stat.Attack); } }
+    /// <summary>Gets the current Support stat of the character, taking into account modifiers.</summary>
     public int Support { get { return GetStat(Stat.Support); } }
+    /// <summary>Gets the current Defense stat of the character, taking into account modifiers.</summary>
     public int Defense { get { return GetStat(Stat.Defense); } }
+    /// <summary>Gets the current Speed stat of the character, taking into account modifiers.</summary>
     public int Speed { get { return GetStat(Stat.Speed); } }
 
-    public List<MoveData> Moveset { get; private set; }
-    public List<AbilityData> Abilities { get; private set; }
+    /// <summary>Gets the character's moveset, which is the list of moves it has available to use.</summary>
+    public List<MoveData> Moveset { get => _moveset; }
+    /// <summary>Gets a list of the abilities the character currently has.</summary>
+    public List<AbilityData> Abilities { get => _abilities; }
 
+    /// <summary>
+    /// Initialize this character.
+    /// </summary>
     public virtual void Init()
     {
+        _uniqueCharacterId = System.Guid.NewGuid().ToString();
+
         InitializeAdditionalStats();
 
         CalculateTotalStatPoints();
-        CalculateStartingStats();
+        CalculateBaseStats();
 
-        ResetStatModifiers();
         ResetStatusEffects();
+        ResetStatModifiers();
 
         _currentHP = MaxHP;  // start at max health
 
         DetermineMoveset();
         DetermineAbilities();
-
-        uniqueCharacterId = instanceCount++;
     }
 
+    /// <summary>
+    /// Signal to this character that a battle has started.
+    /// </summary>
     public void BattleStart()
     {
         SetHP(MaxHP);  // start battle at max health
@@ -74,6 +109,9 @@ public class CharacterInstance
             ability.Effects.OnBattleStart?.Invoke(this, ability);
     }
 
+    /// <summary>
+    /// Signal to this character that a new round has started.
+    /// </summary>
     public void RoundStart()
     {
         // trigger start of round effects of status effects and abilities on this character
@@ -83,6 +121,9 @@ public class CharacterInstance
             ability.Effects.OnRoundStart?.Invoke(this, null, ability);
     }
 
+    /// <summary>
+    /// Signal to this character that a round has ended.
+    /// </summary>
     public void RoundEnd()
     {
         // trigger end of round effects of status effects and abilities on this character
@@ -92,6 +133,9 @@ public class CharacterInstance
             ability.Effects.OnRoundEnd?.Invoke(this, null, ability);
     }
 
+    /// <summary>
+    /// Signal to this character that its turn has started.
+    /// </summary>
     public void TurnStart()
     {
         // trigger start of turn effects of status effects on this character
@@ -105,6 +149,9 @@ public class CharacterInstance
             ability.Effects.OnTurnStart?.Invoke(this, null, ability);
     }
 
+    /// <summary>
+    /// Signal to this character that its turn has ended.
+    /// </summary>
     public void TurnEnd()
     {
         // trigger end of turn effects of status effects and abilities on this character
@@ -123,6 +170,12 @@ public class CharacterInstance
         _characterUI.SetEffects(StatusEffects);  // update UI
     }
 
+    /// <summary>
+    /// Handle being targeted by a damaging effect of a move.
+    /// </summary>
+    /// <param name="user">The character that used the move.</param>
+    /// <param name="move">The move that was used.</param>
+    /// <param name="effect">The move effect causing the damage.</param>
     public void TakeAttackDamage(CharacterInstance user, MoveData move, MoveDamageEffect effect)
     {
         // calculate the basic damage based on the move effect power, user's level,
@@ -144,6 +197,12 @@ public class CharacterInstance
             ability.Effects.OnAfterAttackDamage?.Invoke(this, null, ability, user);
     }
 
+    /// <summary>
+    /// Handle being targeted by a status effect of a move.
+    /// </summary>
+    /// <param name="user">The character that used the move.</param>
+    /// <param name="move">The move that was used.</param>
+    /// <param name="effect">The move effect being applied.</param>
     public void ApplyMoveStatusEffect(CharacterInstance user, MoveData move, MoveStatusEffect effect)
     {
         // calculate the power and duration of status effects applied by this effect
@@ -164,6 +223,12 @@ public class CharacterInstance
         }
     }
 
+    /// <summary>
+    /// Handle being targeted by a heal effect of a move.
+    /// </summary>
+    /// <param name="user">The character that used the move.</param>
+    /// <param name="move">The move that was used.</param>
+    /// <param name="effect">The move effect causing the healing.</param>
     public void ApplyMoveHeal(CharacterInstance user, MoveData move, MoveHealEffect effect)
     {
         // calculate the heal power based on the move effect power and user's support stat
@@ -174,12 +239,19 @@ public class CharacterInstance
         Heal(healAmount);
     }
 
+    /// <summary>
+    /// Attempt to apply a status effect to this character. <br/>If this character already has a version of that status effect
+    /// with higher power or duration, it won't be applied.
+    /// </summary>
+    /// <param name="effect">The status effect to apply.</param>
+    /// <param name="procEffects">Whether or not to trigger effects of abilities and other status effects this character has.</param>
+    /// <returns>Whether or not the status effect was applied.</returns>
     public bool ApplyStatusEffect(StatusEffectInstance effect, bool procEffects)
     {
         StatusEffectInstance oldEffect = StatusEffects.Find(status => status.StatusEffectData.Id == effect.StatusEffectData.Id);
         if (oldEffect != null)
         {
-            if (oldEffect.BuffPower < effect.BuffPower)
+            if (oldEffect.Power < effect.Power)
             {
                 // if this character already has this status effect, but the old one is weaker, replace it with the new one
                 RemoveStatusEffect(oldEffect, false);
@@ -187,7 +259,7 @@ public class CharacterInstance
                 AddStatusEffect(effect, procEffects);
                 return true;
             }
-            else if (oldEffect.BuffPower == effect.BuffPower && oldEffect.Duration <= effect.Duration)
+            else if (oldEffect.Power == effect.Power && oldEffect.Duration <= effect.Duration)
             {
                 // if this character already has this status effect of the same power,
                 // but the old one has less or equal duration, replace it with the new one
@@ -205,9 +277,15 @@ public class CharacterInstance
         }
     }
 
+    /// <summary>
+    /// Add a status effect to this character.
+    /// </summary>
+    /// <param name="effect">The status effect to add.</param>
+    /// <param name="procEffects">Whether or not to trigger effects of abilities and other status effects this character has.</param>
     protected void AddStatusEffect(StatusEffectInstance effect, bool procEffects)
     {
         StatusEffects.Add(effect);
+        effect.OnApply();
         effect.Effects.OnApply?.Invoke(this, effect);  // trigger on apply effects of this status
 
         if (procEffects)
@@ -222,12 +300,18 @@ public class CharacterInstance
         if (CharacterUI != null) CharacterUI.SetEffects(StatusEffects);  // update UI
     }
 
+    /// <summary>
+    /// Remove a status effect from this character.
+    /// </summary>
+    /// <param name="effect">The status effect to remove.</param>
+    /// <param name="procEffects">Whether or not to trigger effects of abilities and other status effects this character has.</param>
     public void RemoveStatusEffect(StatusEffectInstance effect, bool procEffects)
     {
         // on expire effects of status effects and abilities are not triggered in
         // special cases such as encounter modifiers being added or abilities adding their statuses
         if (procEffects) effect.Effects.OnExpire?.Invoke(this, effect);
 
+        effect.OnRemove();
         effect.Effects.OnRemove?.Invoke(this, effect);  // trigger any effects of this status effect that trigger when it is removed
         StatusEffects.Remove(effect);
 
@@ -243,6 +327,11 @@ public class CharacterInstance
         if (CharacterUI != null) CharacterUI.SetEffects(StatusEffects);  // update UI
     }
 
+    /// <summary>
+    /// Remove a status effect from this character.
+    /// </summary>
+    /// <param name="effectId">The id of the status effect to remove.</param>
+    /// <param name="procEffects">Whether or not to trigger effects of abilities and other status effects this character has.</param>
     public void RemoveStatusEffect(string effectId, bool procEffects)
     {
         if (StatusEffects.Count > 0 && StatusEffects.Exists(status => status.StatusEffectData.Id == effectId))
@@ -253,17 +342,32 @@ public class CharacterInstance
         }
     }
 
+    /// <summary>
+    /// Add a stat modifier to this character.
+    /// </summary>
+    /// <param name="stat">The stat to add a modifier for.</param>
+    /// <param name="amount">The value of the modifier (float between 0 and 1).</param>
+    /// <param name="sourceId">The id of the source of this modifier.</param>
     public void AddModifier(Stat stat, float amount, string sourceId)
     {
         StatModifiers[stat].Add(new StatModifier(amount, sourceId));
     }
 
+    /// <summary>
+    /// Remove a stat modifier from this character.
+    /// </summary>
+    /// <param name="stat">The stat to remove a modifier from.</param>
+    /// <param name="sourceId">The id of the source of the modifier.</param>
     public void RemoveModifier(Stat stat, string sourceId)
     {
         StatModifiers[stat].RemoveAll(mod => mod.SourceId == sourceId);
     }
 
-    public void TakeDamage(int damage)
+    /// <summary>
+    /// Make this character take some amount of damage. Health will not go below zero.
+    /// </summary>
+    /// <param name="damage">The amount of damage to take.</param>
+    protected void TakeDamage(int damage)
     {
         // trigger effects of status effects and abilities on this character that happen before taking any damage
         foreach (StatusEffectInstance status in StatusEffects)
@@ -286,7 +390,11 @@ public class CharacterInstance
         }
     }
 
-    public void Heal(int healAmount)
+    /// <summary>
+    /// Make this character heal some amount of health. Health will not go above this character's Max HP.
+    /// </summary>
+    /// <param name="healAmount">The amount of health to heal.</param>
+    protected void Heal(int healAmount)
     {
         _currentHP = Mathf.Min(_currentHP + healAmount, MaxHP);  // keep health from exceding MaxHP
 
@@ -297,30 +405,65 @@ public class CharacterInstance
             ability.Effects.OnAfterHPChanged?.Invoke(this, null, ability);
     }
 
-    public bool HasAllMoveStatusEffects(MoveData move)
+    /// <summary>
+    /// Determine if this character has all status effects of the provided types that can be applied by a move.
+    /// </summary>
+    /// <param name="move">The move to check.</param>
+    /// <param name="effectTypes">A list of the status effect types to check for.</param>
+    /// <returns>Whether or not this character already has every status effect that can be applied by the provided move.</returns>
+    public bool HasAllMoveStatusEffects(MoveData move, List<StatusEffectType> effectTypes)
     {
         foreach (StatusEffectData status in move.StatusEffects.Keys)
         {
-            if (!HasStatusEffect(status.Id)) return false;
+            if (effectTypes.Contains(status.Type))
+                if (!HasStatusEffect(status.Id)) return false;
         }
         return true;
     }
 
+    /// <summary>
+    /// Determine if this character has all status effects of the provided type that can be applied by a move.
+    /// </summary>
+    /// <param name="move">The move to check.</param>
+    /// <param name="effectType">The status effect types to check for.</param>
+    /// <returns>Whether or not this character already has every status effect that can be applied by the provided move.</returns>
+    public bool HasAllMoveStatusEffects(MoveData move, StatusEffectType effectType)
+    {
+        foreach (StatusEffectData status in move.StatusEffects.Keys)
+        {
+            if (effectType == status.Type)
+                if (!HasStatusEffect(status.Id)) return false;
+        }
+        return true;
+    }
+
+    /// <summary>
+    /// Determine if this character has a status effect.
+    /// </summary>
+    /// <param name="statusId">The id of the status effect to check for.</param>
+    /// <returns>Whether or not this character has the provided status effect.</returns>
     public bool HasStatusEffect(string statusId)
     {
         return StatusEffects.Exists(status => status.StatusEffectData.Id == statusId);
     }
 
     // Helper methods for use inside this class
+    /// <summary>
+    /// Directly set this character's hp while keeping it within the range of zero to its Max HP. Directly updates this character's healthbar.
+    /// </summary>
+    /// <param name="hp">The amount to set the hp to.</param>
     protected void SetHP(int hp)
     {
         _currentHP = Mathf.Clamp(hp, 0, MaxHP);  // keep hp within range
         CharacterUI.UpdateHealth();  // update UI
     }
 
+    /// <summary>
+    /// Initialize the additional stats of this character with a zero in each stat. To be called when this character is first initialized.
+    /// </summary>
     protected void InitializeAdditionalStats()
     {
-        AdditionalStats = new Dictionary<Stat, int>()
+        _additionalStats = new Dictionary<Stat, int>()
         {
             {Stat.MaxHP, 0},
             {Stat.Attack, 0},
@@ -330,16 +473,24 @@ public class CharacterInstance
         };
     }
 
-    protected void CalculateStartingStats()
+    /// <summary>
+    /// Calculate this character's base stats based on its total stat points and stat spread.
+    /// </summary>
+    protected void CalculateBaseStats()
     {
-        Stats = new Dictionary<Stat, int>();
-        Stats.Add(Stat.MaxHP, Mathf.RoundToInt(totalStatPoints * (_characterData.StatSpread.MaxHP / 100.0f)));
-        Stats.Add(Stat.Attack, Mathf.RoundToInt(totalStatPoints * (_characterData.StatSpread.Attack / 100.0f)));
-        Stats.Add(Stat.Support, Mathf.RoundToInt(totalStatPoints * (_characterData.StatSpread.Support / 100.0f)));
-        Stats.Add(Stat.Defense, Mathf.RoundToInt(totalStatPoints * (_characterData.StatSpread.Defense / 100.0f)));
-        Stats.Add(Stat.Speed, Mathf.RoundToInt(totalStatPoints * (_characterData.StatSpread.Speed / 100.0f)));
+        _stats = new Dictionary<Stat, int>()
+        {
+            {Stat.MaxHP, Mathf.RoundToInt((baseStatPoints + additionalStatPoints) * (_characterData.StatSpread.MaxHP / 100.0f))},
+            {Stat.Attack, Mathf.RoundToInt((baseStatPoints + additionalStatPoints) * (_characterData.StatSpread.Attack / 100.0f))},
+            {Stat.Support, Mathf.RoundToInt((baseStatPoints + additionalStatPoints) * (_characterData.StatSpread.Support / 100.0f))},
+            {Stat.Defense, Mathf.RoundToInt((baseStatPoints + additionalStatPoints) * (_characterData.StatSpread.Defense / 100.0f))},
+            {Stat.Speed, Mathf.RoundToInt((baseStatPoints + additionalStatPoints) * (_characterData.StatSpread.Speed / 100.0f))},
+        };
     }
 
+    /// <summary>
+    /// Remove all stat modifiers on this character.
+    /// </summary>
     protected void ResetStatModifiers()
     {
         StatModifiers = new Dictionary<Stat, List<StatModifier>>()
@@ -356,19 +507,37 @@ public class CharacterInstance
         };
     }
 
+    /// <summary>
+    /// Remove all status effects from this character.
+    /// </summary>
     protected void ResetStatusEffects()
     {
-        StatusEffects = new List<StatusEffectInstance>();
+        if (StatusEffects == null) StatusEffects = new List<StatusEffectInstance>();
+        else
+        {
+            List<StatusEffectInstance> effects = new List<StatusEffectInstance>();
+            foreach (StatusEffectInstance status in StatusEffects) effects.Add(status);
+            foreach (StatusEffectInstance status in effects) RemoveStatusEffect(status, false);
+        }
     }
 
+    /// <summary>
+    /// Calculate and set the total stat points this character has based on its base stat points and level.
+    /// </summary>
     protected void CalculateTotalStatPoints()
     {
-        totalStatPoints = _characterData.BaseStatPoints + (_characterData.LevelupStatPoints * (_level - 1));
+        baseStatPoints = _characterData.BaseStatPoints + (_characterData.LevelupStatPoints * (_level - 1));
     }
 
+    /// <summary>
+    /// Get the value of a stat on this character.
+    /// </summary>
+    /// <param name="stat">The stat to get the value of.</param>
+    /// <returns>The current value of the provided stat.</returns>
     protected int GetStat(Stat stat)
     {
-        int value = Stats[stat];
+        // The value of a stat, before temporary modifiers, is the base stat plus any bonus permanent stat increases
+        int value = _stats[stat] + AdditionalStats[stat];
 
         // Multiply the base value by each active stat modifier for that stat (if there are any)
         if (StatModifiers[stat].Count > 0)
@@ -376,29 +545,34 @@ public class CharacterInstance
             List<float> modifierVals = StatModifiers[stat].Select(mod => mod.Power).ToList();
             value = Mathf.RoundToInt(value * modifierVals.Aggregate(1f, (acc, next) => acc * next));
         }
+
         return value;
     }
 
+    /// <summary>
+    /// Set the moveset of this character based on its level.
+    /// </summary>
     protected void DetermineMoveset()
     {
-        Moveset = new List<MoveData>();
+        _moveset = new List<MoveData>();
         foreach (MoveLevelPair mlp in _characterData.MoveLearnset)
         {
             if (mlp.Level <= _level)
-            {
-                Moveset.Add(mlp.MoveData);
-            }
+                _moveset.Add(mlp.MoveData);
         }
     }
 
+    /// <summary>
+    /// Set the abilities of this character based on its level.
+    /// </summary>
     protected void DetermineAbilities()
     {
-        Abilities = new List<AbilityData>();
+        _abilities = new List<AbilityData>();
         foreach (AbilityLevelPair mlp in _characterData.AbilityLearnset)
         {
             if (mlp.Level <= _level)
             {
-                Abilities.Add(mlp.AbilityData);
+                _abilities.Add(mlp.AbilityData);
             }
         }
     }
@@ -409,9 +583,16 @@ public enum Stat { MaxHP, Attack, Support, Defense, Speed, DamageDealt, DamageTa
 [System.Serializable]
 public class StatModifier
 {
+    /// <summary>Gets the power of this modifier.</summary>
     public float Power { get; private set; }
+    /// <summary>Gets the id of the source of this modifier.</summary>
     public string SourceId { get; private set; }
 
+    /// <summary>
+    /// Initialize and create a new stat modifier.
+    /// </summary>
+    /// <param name="power">The value of the modifier.</param>
+    /// <param name="sourceId">The id of the source of this modifier.</param>
     public StatModifier(float power, string sourceId)
     {
         Power = power;

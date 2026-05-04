@@ -1,6 +1,9 @@
 using TMPro;
 using UnityEngine;
 
+/// <summary>
+/// A UI that displays information about a move.
+/// </summary>
 public class MoveInfoUI : MonoBehaviour
 {
     private MoveData _move;
@@ -12,6 +15,7 @@ public class MoveInfoUI : MonoBehaviour
     [SerializeField] private TextMeshProUGUI hitsText;
     [SerializeField] private TextMeshProUGUI descriptionText;
 
+    /// <summary>Gets or sets the move for this UI to display info about. Setting automatically updates the UI.</summary>
     public MoveData Move
     {
         get => _move;

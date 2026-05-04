@@ -2,6 +2,9 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
+/// <summary>
+/// A UI showing up to the next five characters in the current turn order. Each character is represented by a CharacterIcon.
+/// </summary>
 public class TurnOrderUI : MonoBehaviour
 {
     [SerializeField] GameObject characterIconPrefab;
@@ -15,6 +18,10 @@ public class TurnOrderUI : MonoBehaviour
         characterIcons = new Queue<GameObject>();
     }
     
+    /// <summary>
+    /// Set the turn order and display it.
+    /// </summary>
+    /// <param name="turnQueue">The turn queue to display.</param>
     public void SetTurnOrder(Queue<CharacterInstance> turnQueue)
     {
         // remove old data
@@ -35,6 +42,10 @@ public class TurnOrderUI : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Dequeue and destroy the icon of the character that just finished their turn.
+    /// <br/>To be called when a character's turn ends. 
+    /// </summary>
     public void NextTurn()
     {
         if (characterIcons.Count <= 0) return;

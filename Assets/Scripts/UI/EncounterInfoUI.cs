@@ -1,6 +1,9 @@
 using TMPro;
 using UnityEngine;
 
+/// <summary>
+/// UI that displays information about the current encounter, including icons for each active encounter modifier.
+/// </summary>
 public class EncounterInfoUI : MonoBehaviour
 {
     [SerializeField] private GameObject modifierIconPrefab;
@@ -12,19 +15,20 @@ public class EncounterInfoUI : MonoBehaviour
     [SerializeField] private TextMeshProUGUI roundText;
     [SerializeField] private Transform modifierIconContainer;
 
+    /// <summary>
+    /// Set the encounter and display info about it, including icons for each of its modifiers.
+    /// </summary>
+    /// <param name="data">The encounter data to display info about.</param>
     public void SetEncounter(EncounterData data)
     {
         encounterData = data;
         SetEncounterNameText(encounterData.Name);
         SetEncounterDifficultyText(encounterData.DifficultyLevel);
 
-        if (encounterData.Modifiers.Length > 0)
+        foreach (EncounterModifierData modifier in encounterData.Modifiers)
         {
-            foreach (EncounterModifierData modifier in encounterData.Modifiers)
-            {
-                GameObject icon = Instantiate(modifierIconPrefab, modifierIconContainer);
-                icon.GetComponent<EncounterModifierIcon>().ModifierData = modifier;
-            }
+            GameObject icon = Instantiate(modifierIconPrefab, modifierIconContainer);
+            icon.GetComponent<EncounterModifierIcon>().ModifierData = modifier;
         }
     }
 

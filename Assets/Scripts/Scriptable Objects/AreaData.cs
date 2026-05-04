@@ -1,12 +1,23 @@
+using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary>
+/// A scriptable object that contains the data for an area.
+/// </summary>
 [CreateAssetMenu(fileName = "NewAreaData", menuName = "ScriptableObjects/Area Data", order = -1000)]
 public class AreaData : ScriptableObject
 {
     [SerializeField] private string _name;
-    [SerializeField] private string _id;
-    [SerializeField, TextArea] private string _description;
+    [SerializeField, Tooltip("The unique string id of this area.")] private string _id;
+    [SerializeField, TextArea, Tooltip("Enemy types that are normally found in this area.")] private string _description;
 
-    [SerializeField] private EncounterModifierData[] _modifiers;
-    [SerializeField] private EnemyData[] _enemies;
+    [SerializeField] private List<EnemyData> _enemies;
+
+    public string Name { get => _name; }
+    /// <summary>Gets the unique string id of this area.</summary>
+    public string Id { get => _id; }
+    public string Description { get => _description; }
+
+    /// <summary>Gets a list of the enemy types that are normally found in this area.</summary>
+    public List<EnemyData> Enemies { get => _enemies; }
 }

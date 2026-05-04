@@ -3,6 +3,9 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
+/// <summary>
+/// A UI gives an overview of the move it cooresponds to and, when clicked, communicates back to the battle manager that its move is clicked.
+/// </summary>
 public class MoveOptionUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerClickHandler
 {
     private MoveData _move;
@@ -19,6 +22,7 @@ public class MoveOptionUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
 
     private MoveInfoUI moveInfoUI;
 
+    /// <summary>Gets or sets the move that cooresponds to this move option UI. Setting automatically updates the UI.</summary>
     public MoveData Move
     {
         get => _move;
@@ -37,7 +41,7 @@ public class MoveOptionUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHan
     private void Awake()
     {
         image = GetComponent<Image>();
-        moveInfoUI = transform.parent.parent.parent.GetComponentInParent<MoveSelectionUI>().MoveInfoUI_;
+        moveInfoUI = transform.parent.parent.parent.GetComponentInParent<MoveSelectionUI>().MoveInfoUI;
     }
 
     public void OnPointerEnter(PointerEventData eventData)

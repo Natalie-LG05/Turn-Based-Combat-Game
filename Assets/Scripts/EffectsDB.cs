@@ -1,6 +1,10 @@
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
+/// <summary>
+/// A class declaring and storing instances of the Effect class for each status effect and ability that requires custom logic.
+/// </summary>
 public class EffectsDB
 {
     public static Dictionary<string, Effect> StatusEffects { get; private set; } = new Dictionary<string, Effect>()
@@ -10,42 +14,21 @@ public class EffectsDB
             "attack_up",
             new Effect()
             {
-                OnApply = (CharacterInstance character, StatusEffectInstance statusEffect) =>
-                {
-                    character.AddModifier(Stat.Attack, 1 + (statusEffect.BuffPower / 100f), statusEffect.StatusEffectData.Id);
-                },
-                OnRemove = (CharacterInstance character, StatusEffectInstance statusEffect) =>
-                {
-                    character.RemoveModifier(Stat.Attack, statusEffect.StatusEffectData.Id);
-                }
+                
             }
         },
         {
             "defense_up",
             new Effect()
             {
-                OnApply = (CharacterInstance character, StatusEffectInstance statusEffect) =>
-                {
-                    character.AddModifier(Stat.Defense, 1 + (statusEffect.BuffPower / 100f), statusEffect.StatusEffectData.Id);
-                },
-                OnRemove = (CharacterInstance character, StatusEffectInstance statusEffect) =>
-                {
-                    character.RemoveModifier(Stat.Defense, statusEffect.StatusEffectData.Id);
-                }
+                
             }
         },
         {
             "evasion_up",
             new Effect()
             {
-                OnApply = (CharacterInstance character, StatusEffectInstance statusEffect) =>
-                {
-                    character.AddModifier(Stat.Evasion, 1 + (statusEffect.BuffPower / 100f), statusEffect.StatusEffectData.Id);
-                },
-                OnRemove = (CharacterInstance character, StatusEffectInstance statusEffect) =>
-                {
-                    character.RemoveModifier(Stat.Evasion, statusEffect.StatusEffectData.Id);
-                }
+                
             }
         },
         // Standard stat downs
@@ -53,14 +36,7 @@ public class EffectsDB
             "speed_down",
             new Effect()
             {
-                OnApply = (CharacterInstance character, StatusEffectInstance statusEffect) =>
-                {
-                    character.AddModifier(Stat.Speed, 1 - (statusEffect.DebuffPower / 100f), statusEffect.StatusEffectData.Id);
-                },
-                OnRemove = (CharacterInstance character, StatusEffectInstance statusEffect) =>
-                {
-                    character.RemoveModifier(Stat.Speed, statusEffect.StatusEffectData.Id);
-                }
+                
             } 
         },
         // Move statuses
@@ -68,14 +44,7 @@ public class EffectsDB
             "whirlpool",
             new Effect()
             {
-                OnApply = (CharacterInstance character, StatusEffectInstance statusEffect) =>
-                {
-                    character.AddModifier(Stat.Speed, 1 - (statusEffect.DebuffPower / 100f), statusEffect.StatusEffectData.Id);
-                },
-                OnRemove = (CharacterInstance character, StatusEffectInstance statusEffect) =>
-                {
-                    character.RemoveModifier(Stat.Speed, statusEffect.StatusEffectData.Id);
-                }
+                
             }
         },
         // Ability statuses
@@ -83,14 +52,7 @@ public class EffectsDB
             "hard_shell",
             new Effect()
             {
-                OnApply = (CharacterInstance character, StatusEffectInstance statusEffect) =>
-                {
-                    character.AddModifier(Stat.Defense, 1 + (statusEffect.BuffPower / 100f), statusEffect.StatusEffectData.Id);
-                },
-                OnRemove = (CharacterInstance character, StatusEffectInstance statusEffect) =>
-                {
-                    character.RemoveModifier(Stat.Defense, statusEffect.StatusEffectData.Id);
-                }
+
             }
         },
         // Encounter modifier statuses
@@ -113,7 +75,7 @@ public class EffectsDB
             "hard_shell",
             new Effect()
             {
-                OnAfterHPChanged = (CharacterInstance character, StatusEffectInstance sourceEffect, AbilityData ability) =>
+                OnAfterHPChanged = (CharacterInstance character, StatusEffectInstance statusEffect, AbilityData ability) =>
                 {
                     character.RemoveStatusEffect(ability.StatusEffect.Id, false);
                     
@@ -128,12 +90,22 @@ public class EffectsDB
             "evasive",
             new Effect()
             {
-                OnStatusGained = (CharacterInstance character, StatusEffectInstance sourceEffect, AbilityData ability, StatusEffectInstance statusEffect) =>
+                OnStatusGained = (CharacterInstance character, StatusEffectInstance statusEffect, AbilityData ability, StatusEffectInstance triggeringStatusEffect) =>
                 {
-                    character.RemoveStatusEffect(statusEffect, false);
-                    character.ApplyStatusEffect(new StatusEffectInstance(statusEffect.StatusEffectData,
-                        statusEffect.Duration, statusEffect.BuffPower * 2, statusEffect.SourceCharacter,
-                        statusEffect.Character), false);
+                    // remove the triggering status effect (if it increases evasion) and replace it with the same effect with double the power
+                    // TODO: Only increase the power of the evasion up part, not the entire effect (do after making modular status effects)
+                    if (triggeringStatusEffect.StatusEffectData.Categories.Contains(StatusEffectCategory.EvasionUp))
+                    {
+                        character.RemoveStatusEffect(triggeringStatusEffect, false);
+
+                        StatusEffectInstance newEffect = new StatusEffectInstance(triggeringStatusEffect.StatusEffectData,
+                            triggeringStatusEffect.Duration, triggeringStatusEffect.Power, triggeringStatusEffect.SourceCharacter,
+                            triggeringStatusEffect.Character);
+                        StatusEffectStatModifier modifier = newEffect.StatIncreases.Where(modifier => modifier.Stat == Stat.Evasion).First();
+                        modifier.Multiplier *= 2;
+
+                        character.ApplyStatusEffect(newEffect, false);
+                    }
                 }
             }
         },

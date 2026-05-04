@@ -1,6 +1,9 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary>
+/// A tooltip that displays the status effects that a character has and information about each. It is a scrollable list of all the status effects after the 4th.
+/// </summary>
 public class EffectListTooltip : Tooltip
 {
     [SerializeField] private GameObject effectInfoUIPrefab;
@@ -17,6 +20,12 @@ public class EffectListTooltip : Tooltip
         effectInfoUIs = new List<GameObject>();
     }
 
+    /// <summary>
+    /// Set the data for the tooltip to show based on the object that triggered the tooltip.
+    /// <br/>This tooltip is shown when a +x effect icon is hovered,
+    /// <br/>so set the data based on the list of status effects attached to that icon.
+    /// </summary>
+    /// <param name="sourceObject">The game object that triggered the tooltip.</param>
     public override void SetTooltipData(GameObject sourceObject)
     {
         base.SetTooltipData(sourceObject);
@@ -32,15 +41,14 @@ public class EffectListTooltip : Tooltip
 
     private void SetEffects(List<StatusEffectInstance> effects)
     {
-        if (effects.Count > 0)
-        {
-            foreach (StatusEffectInstance effect in effects)
-            {
-                NewEffect(effect);
-            }
-        }
+        foreach (StatusEffectInstance effect in effects)
+            NewEffect(effect);
     }
 
+    /// <summary>
+    /// Add a new entry to the list, displaying info about the provided effect.
+    /// </summary>
+    /// <param name="effect">The status effect to display info about.</param>
     private void NewEffect(StatusEffectInstance effect)
     {
         GameObject effectInfo = Instantiate(effectInfoUIPrefab, effectUIContainer);

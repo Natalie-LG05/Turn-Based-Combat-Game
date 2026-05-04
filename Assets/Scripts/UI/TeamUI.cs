@@ -1,6 +1,9 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary>
+/// A UI object that holds the character UIs for a team. A team should only contain up to five characters.
+/// </summary>
 public class TeamUI : MonoBehaviour
 {
     [SerializeField] private GameObject characterUIPrefab;
@@ -14,6 +17,10 @@ public class TeamUI : MonoBehaviour
         characterUIs = new List<GameObject>();
     }
 
+    /// <summary>
+    /// Set the characters to show on this team.
+    /// </summary>
+    /// <param name="characters">A list of the characters on this team.</param>
     public void SetTeam(List<CharacterInstance> characters)
     {
         // Delete old characters (if any)
@@ -39,6 +46,10 @@ public class TeamUI : MonoBehaviour
         NewCharacter(character);
     }
 
+    /// <summary>
+    /// Create a new character UI and set its data.
+    /// </summary>
+    /// <param name="character">The character to add and show info about.</param>
     private void NewCharacter(CharacterInstance character)
     {
         GameObject characterUI = Instantiate(characterUIPrefab, characterUIContainer);

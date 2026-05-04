@@ -6,6 +6,9 @@ using UnityEngine.InputSystem;
 
 public enum BattleState { Setup, ActionSelection, MoveSelection, TargetSelection, PartyScreen, ReplaceDeadPartyMember, EnemyTurn, PerformMove, RoundEnd, Busy }
 
+/// <summary>
+/// Manages battle, containing the main gameplay loop during combat, handling much of the logic.
+/// </summary>
 public class BattleManager : MonoBehaviour
 {
     private int wave;
@@ -13,6 +16,7 @@ public class BattleManager : MonoBehaviour
 
     public static BattleManager Instance { get; private set; }
     private BattleState state;
+    /// <summary>Gets the character who's turn it currently is.</summary>
     public CharacterInstance CurrentCharacter { get { return turnQueue.Peek(); } }
 
     private List<PartyMemberInstance> party;
@@ -57,9 +61,10 @@ public class BattleManager : MonoBehaviour
         turnQueue = new Queue<CharacterInstance>();
 
         dialogueBox = dialogueBoxGO.GetComponent<BattleDialogueBox>();
-        dialogueQueue = new Queue<string>();
         moveSelectionUI = moveSelectionUIGO.GetComponent<MoveSelectionUI>();
         partyMemberSelectionUI = partyMemberSelectionUIGO.GetComponent<PartyMemberSelectionUI>();
+
+        dialogueQueue = new Queue<string>();
 
         Instance = this;
     }
@@ -96,12 +101,19 @@ public class BattleManager : MonoBehaviour
     }
 
     // public methods for use in other scripts
+    /// <summary>
+    /// Add a message to the dialogue queue.
+    /// </summary>
+    /// <param name="message">The message/dialogue to queue.</param>
     public void QueueMessage(string message)
     {
         dialogueQueue.Enqueue(message);
     }
 
     // public methods for buttons to call
+    /// <summary>
+    /// When the move button is clicked during action selection, change to move selection and show the move selection screen.
+    /// </summary>
     public void MoveButtonClicked()
     {
         if (state == BattleState.ActionSelection)
@@ -114,6 +126,12 @@ public class BattleManager : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// When a move option is clicked during move selection, 
+    /// <br/>either use that move if it requires no target selection 
+    /// <br/>or change to target selection and show the action selection screen and some dialogue.
+    /// </summary>
+    /// <param name="move">The move that was selected.</param>
     public void MoveOptionClicked(MoveData move)
     {
         if (state == BattleState.MoveSelection)
@@ -133,6 +151,10 @@ public class BattleManager : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// When a valid target option is clicked during target selection, use the selected move with that target.
+    /// </summary>
+    /// <param name="target"></param>
     public void TargetOptionClicked(CharacterInstance target)
     {
         if (state == BattleState.TargetSelection)
@@ -152,6 +174,9 @@ public class BattleManager : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// When the switch button is clicked during action selection, change to party member selection and show the party screen.
+    /// </summary>
     public void SwitchButtonClicked()
     {
         if (state == BattleState.ActionSelection)
@@ -160,10 +185,15 @@ public class BattleManager : MonoBehaviour
 
             // show the party screen and update the UI
             ShowPartyScreen();
-            partyMemberSelectionUI.SetParty(party, partyMemberDiedThisTurn);
+            partyMemberSelectionUI.SetParty(party, partyMemberDiedThisTurn);  // TODO: keep track of and show dead party members
         }
     }
 
+    /// <summary>
+    /// When a valid party member option is clicked during party member selection, 
+    /// <br/>switch that character in, deactivating the current party member (if applicable).
+    /// </summary>
+    /// <param name="character"></param>
     public void PartyMemberOptionClicked(CharacterInstance character)
     {
         if (state == BattleState.PartyScreen)
@@ -180,6 +210,9 @@ public class BattleManager : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// When the back button is clicked during move selection or party member selection, change to action selection and show the action selection screen.
+    /// </summary>
     public void BackButtonClicked()
     {
         if (state == BattleState.MoveSelection || state == BattleState.PartyScreen)
@@ -191,6 +224,9 @@ public class BattleManager : MonoBehaviour
     }
 
     // Main logic methods
+    /// <summary>
+    /// Handle the logic for starting battle.
+    /// </summary>
     private void SetupBattle()
     {
         state = BattleState.Setup;
@@ -246,6 +282,9 @@ public class BattleManager : MonoBehaviour
         StartNextTurn();
     }
 
+    /// <summary>
+    /// Handle the logic for when a round ends.
+    /// </summary>
     private void EndRound()
     {
         // if a party member died this round, show the party screen for the player to choose another (if there are any) to replace it
@@ -276,6 +315,10 @@ public class BattleManager : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Start the next character's turn (if any) and handle any applicabale start of turn logic.
+    /// <br/>If there are no characters left in the turn queue, end the current round.
+    /// </summary>
     private void StartNextTurn()
     {
         // Check if there are more characters in the turn queue, otherwise end the round
@@ -305,9 +348,13 @@ public class BattleManager : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Handle the logic for when a character's turn ends.
+    /// </summary>
     private void EndTurn()
     {
-        CurrentCharacter.TurnEnd();  // signal to the character that its turn has ended
+        // signal to the character that its turn has ended, unless it switched or died
+        if (playerTeam.Contains(CurrentCharacter)) CurrentCharacter.TurnEnd();
 
         turnQueue.Dequeue();
         turnOrderUI.NextTurn();  // update the turn order UI
@@ -317,7 +364,7 @@ public class BattleManager : MonoBehaviour
         {
             if (playerTeam.Count > 0 && encounterManager.CurrentEncounter.Waves.Count() > wave)
             {
-                SpawnEnemyWave(wave++);
+                SpawnEnemyWave(++wave);
                 StartRound();
             }
 #if UNITY_EDITOR
@@ -331,6 +378,11 @@ public class BattleManager : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Handle the logic for when the player uses a move.
+    /// </summary>
+    /// <param name="move">The move to be used.</param>
+    /// <param name="target">The primary target of the move.</param>
     private IEnumerator PlayerMove(MoveData move, CharacterInstance target)
     {
         // show the action selection screen so that dialogue is visible in the dialogue box and to avoid confusion
@@ -339,6 +391,11 @@ public class BattleManager : MonoBehaviour
         EndTurn();
     }
 
+    /// <summary>
+    /// Handle the logic for when the player does the switch action.
+    /// </summary>
+    /// <param name="oldCharacter">The character being swapped out.</param>
+    /// <param name="newCharacter">The character being swapped in.</param>
     private IEnumerator PlayerSwitch(CharacterInstance oldCharacter, CharacterInstance newCharacter)
     {
         Switch(oldCharacter, newCharacter);
@@ -350,11 +407,16 @@ public class BattleManager : MonoBehaviour
         EndTurn();
     }
 
+    /// <summary>
+    /// Handle the logic for an enemy taking its turn.
+    /// </summary>
+    /// <param name="currentCharacter">The character who's turn it currently is.</param>
     private IEnumerator EnemyTurn(CharacterInstance currentCharacter)
     {
         state = BattleState.EnemyTurn;
-        EnemyInstance enemy = enemyTeam.Where(enemy => enemy.uniqueCharacterId == currentCharacter.uniqueCharacterId).First();
+        EnemyInstance enemy = enemyTeam.Where(enemy => enemy.UniqueCharacterId == currentCharacter.UniqueCharacterId).First();
 
+        // choose what action the enemy will use then perform that action
         EnemyAction chosenAction = DetermineEnemyAction(enemy);
         switch (chosenAction)
         {
@@ -375,6 +437,11 @@ public class BattleManager : MonoBehaviour
         EndTurn();
     }
 
+    /// <summary>
+    /// Handle logic for an enemy using an attack move.
+    /// <br/>Enemies use their strongest attack on a random player character.
+    /// </summary>
+    /// <param name="enemy">The enemy performing the action.</param>
     private IEnumerator EnemyAttack(EnemyInstance enemy)
     {
         MoveData move = enemy.StrongestAttackMove();  // enemies attack with their strongest attack move
@@ -382,6 +449,11 @@ public class BattleManager : MonoBehaviour
         yield return UseMove(enemy, target, move);
     }
 
+    /// <summary>
+    /// Handle logic for an enemy using a buff move.
+    /// <br/>Enemies give the strongest version of a buff to a random ally that doesn't already have that buff.
+    /// </summary>
+    /// <param name="enemy">The enemy performing the action.</param>
     private IEnumerator EnemyBuff(EnemyInstance enemy)
     {
         // only use buff moves on targets that don't have the buffs they give already
@@ -397,6 +469,11 @@ public class BattleManager : MonoBehaviour
         yield return UseMove(enemy, target, move);
     }
 
+    /// <summary>
+    /// Handle logic for an enemy using a debuff move.
+    /// <br/>Enemies give the strongest version of a debuff to a random player character that doesn't already have that debuff.
+    /// </summary>
+    /// <param name="enemy">The enemy performing the action.</param>
     private IEnumerator EnemyDebuff(EnemyInstance enemy)
     {
         // only use debuff moves on targets that don't have the debuffs they give already
@@ -412,6 +489,11 @@ public class BattleManager : MonoBehaviour
         yield return UseMove(enemy, target, move);
     }
 
+    /// <summary>
+    /// Handle logic for an enemy using a healing move.
+    /// <br/>Enemies will heal allies that are under a certain health percentage.
+    /// </summary>
+    /// <param name="enemy">The enemy performing the action.</param>
     private IEnumerator EnemyHeal(EnemyInstance enemy)
     {
         // enemies use the strongest healing move they have that affects the ally they selected to heal
@@ -422,6 +504,10 @@ public class BattleManager : MonoBehaviour
         yield return UseMove(enemy, target, move);
     }
 
+    /// <summary>
+    /// Spawn a specified wave of enemies from the current encounter.
+    /// </summary>
+    /// <param name="waveNum">The wave to spawn.</param>
     private void SpawnEnemyWave(int waveNum)
     {
         foreach (EnemyInstance enemy in encounterManager.CurrentEncounter.Waves[waveNum - 1].Enemies)
@@ -429,6 +515,14 @@ public class BattleManager : MonoBehaviour
         enemyTeamUI.SetTeam(enemyTeam.ConvertAll(enemy => (CharacterInstance)enemy));
     }
 
+    /// <summary>
+    /// Have a provided character perform a provided move with a provided character as the primary target.
+    /// <br/>Depending on the move's target type, the primary target may or may not matter.
+    /// </summary>
+    /// <param name="user"></param>
+    /// <param name="target"></param>
+    /// <param name="move"></param>
+    /// <returns></returns>
     private IEnumerator UseMove(CharacterInstance user, CharacterInstance target, MoveData move)
     {
         BattleState prevState = state;
@@ -447,7 +541,7 @@ public class BattleManager : MonoBehaviour
                     for (int i = 0; i < effect.Hits; i++)
                     {
                         character.TakeAttackDamage(user, move, effect);
-                        yield return UpdateHealthbar(character);
+                        if (character.CharacterUI != null) yield return UpdateHealthbarSmooth(character);
                     }
                 } else
                 {
@@ -482,7 +576,7 @@ public class BattleManager : MonoBehaviour
                 if (CheckIfMoveEffectHits(user, character, effect))
                 {
                     character.ApplyMoveHeal(user, move, effect);
-                    yield return UpdateHealthbar(character);
+                    if (character.CharacterUI != null) yield return UpdateHealthbarSmooth(character);
                 } else
                 {
                     yield return dialogueBox.TypeDialogue($"{user.CharacterData.Name} (lvl {user.Level}) missed!");
@@ -494,6 +588,17 @@ public class BattleManager : MonoBehaviour
     }
 
     // Helper methods
+    /// <summary>
+    /// Given an enemy, enemy action, and move, pick a random valid target.
+    /// <br/>When attacking, chooses a random player character.
+    /// <br/>When buffing, chooses a random ally that doesn't already have all the buffs that the move can apply.
+    /// <br/>When debuffing, chooses a random player character that doesn't already have all the debuffs that the move can apply.
+    /// <br/>When healing, chooses a random ally that is below a certain health threshold.
+    /// </summary>
+    /// <param name="enemy"></param>
+    /// <param name="action"></param>
+    /// <param name="move"></param>
+    /// <returns>The chosen target.</returns>
     private CharacterInstance EnemyChooseTarget(EnemyInstance enemy, EnemyAction action, MoveData move)
     {
         // these target options don't rely on the selected target, so just use the user as the target
@@ -514,9 +619,14 @@ public class BattleManager : MonoBehaviour
                 List<EnemyInstance> healTargetOptions = enemy.AlliesNeedingHealing(enemyTeam);
                 return healTargetOptions[Random.Range(0, healTargetOptions.Count)];
         }
-        return null;  // this should run and is just here to prevent a compilation error
+        return null;  // this should never run and is just here to prevent a compilation error
     }
 
+    /// <summary>
+    /// Randomly pick one of the valid enemy action based the weight (chance) of each action for the provided enemy.
+    /// </summary>
+    /// <param name="enemy">The enemy performing the action.</param>
+    /// <returns>The selected action.</returns>
     private EnemyAction DetermineEnemyAction(EnemyInstance enemy)
     {
         // Determine useful valid actions for the enemy
@@ -539,12 +649,19 @@ public class BattleManager : MonoBehaviour
         return EnemyAction.Attack;  // In case that somehow fails, just default to attacking
     }
 
+    /// <summary>
+    /// Check if a move effect hits based on the accuracy of the effect, the user's accuracy modifiers, and the target's evasion modifiers.
+    /// </summary>
+    /// <param name="user">The character that used the move.</param>
+    /// <param name="target">A target of the move effect.</param>
+    /// <param name="effect">The move effect being applied.</param>
+    /// <returns></returns>
     private bool CheckIfMoveEffectHits(CharacterInstance user, CharacterInstance target, MoveEffect effect)
     {
         // return true in special cases where the move should be guarenteed to hit
         if (effect.AlwaysHits)
             return true;
-        else if (effect.AlwaysHitsSelf && user.uniqueCharacterId == target.uniqueCharacterId)
+        else if (effect.AlwaysHitsSelf && user.UniqueCharacterId == target.UniqueCharacterId)
             return true;
 
         // calculate chance of move hitting based on move's base acccuracy and any relevant accuracy and evasion modifiers
@@ -567,33 +684,42 @@ public class BattleManager : MonoBehaviour
         return hit;
     }
 
-    private IEnumerator UpdateHealthbar(CharacterInstance character)
+    private IEnumerator UpdateHealthbarSmooth(CharacterInstance character)
     {
         yield return character.CharacterUI.UpdateHealthSmooth();
     }
 
+    /// <summary>
+    /// Switch an active party member with an inactive party member.
+    /// </summary>
+    /// <param name="oldCharacter">The party member to swap out.</param>
+    /// <param name="newCharacter">The party member to swap in.</param>
     private void Switch(CharacterInstance oldCharacter, CharacterInstance newCharacter)
     {
         // Update party to reflect the switch
-        int currentIndex = party.FindIndex(chr => chr.uniqueCharacterId == oldCharacter.uniqueCharacterId);
-        int newIndex = party.FindIndex(chr => chr.uniqueCharacterId == newCharacter.uniqueCharacterId);
+        int currentIndex = party.FindIndex(chr => chr.UniqueCharacterId == oldCharacter.UniqueCharacterId);
+        int newIndex = party.FindIndex(chr => chr.UniqueCharacterId == newCharacter.UniqueCharacterId);
         (party[currentIndex], party[newIndex]) = (party[newIndex], party[currentIndex]);
 
         // Update playerTeam to reflect the switch
-        currentIndex = playerTeam.FindIndex(chr => chr.uniqueCharacterId == oldCharacter.uniqueCharacterId);
-        playerTeam[currentIndex] = party.Find(chr => chr.uniqueCharacterId == newCharacter.uniqueCharacterId);
+        currentIndex = playerTeam.FindIndex(chr => chr.UniqueCharacterId == oldCharacter.UniqueCharacterId);
+        playerTeam[currentIndex] = party.Find(chr => chr.UniqueCharacterId == newCharacter.UniqueCharacterId);
 
         // Update characters to reflect the switch
-        characters[characters.FindIndex(chr => chr.uniqueCharacterId == oldCharacter.uniqueCharacterId)] = newCharacter;
+        characters[characters.FindIndex(chr => chr.UniqueCharacterId == oldCharacter.UniqueCharacterId)] = newCharacter;
 
         // Update the character UI to reflect the switch
         oldCharacter.CharacterUI = null;
         playerTeamUI.SetTeam(playerTeam.ConvertAll(chr => (CharacterInstance)chr));
     }
 
+    /// <summary>
+    /// Activate an inactive party member. Assumes that only one party member is already active.
+    /// </summary>
+    /// <param name="character">The party member to activate.</param>
     private void ActivatePartyMember(CharacterInstance character)
     {
-        int partyIndex = party.FindIndex(chr => chr.uniqueCharacterId == character.uniqueCharacterId);
+        int partyIndex = party.FindIndex(chr => chr.UniqueCharacterId == character.UniqueCharacterId);
         playerTeam.Add(party[partyIndex]);
 
         // if the third party member was selected, swap it with the second member,
@@ -613,6 +739,13 @@ public class BattleManager : MonoBehaviour
     }
 
 
+    /// <summary>
+    /// Get the character's that will be targeted by a move effect based on the provided target type, the user of the move, and primary target.
+    /// </summary>
+    /// <param name="targetType">The target type of the effect being used.</param>
+    /// <param name="user">The character using the move.</param>
+    /// <param name="target">The primary target of that was already determined. Certain target types may not use this.</param>
+    /// <returns>The characters that will be targeted.</returns>
     private List<CharacterInstance> GetEffectTargets(MoveTarget targetType, CharacterInstance user, CharacterInstance target)
     {
         List<CharacterInstance> targets = new List<CharacterInstance>();
@@ -658,6 +791,9 @@ public class BattleManager : MonoBehaviour
         return targets;
     }
     
+    /// <summary>
+    /// Determine and set the turn order for this round based on the current speed stat of each character. Speed ties are handled randomly.
+    /// </summary>
     private void DetermineTurnOrder()
     {
         CharacterInstance[] sortedCharacters = new CharacterInstance[characters.Count];
@@ -671,6 +807,11 @@ public class BattleManager : MonoBehaviour
             turnQueue.Enqueue(character);
     }
 
+    /// <summary>
+    /// Check if there are currently any dead characters (characters with <= 0 current HP),
+    /// <br/>killing them if there are.
+    /// </summary>
+    /// <returns>Whether or not there are any dead characters.</returns>
     private bool CheckDeadCharacters()
     {
         List<CharacterInstance> deadCharacters = new List<CharacterInstance>();
@@ -688,10 +829,14 @@ public class BattleManager : MonoBehaviour
         else return false;
     }
 
+    /// <summary>
+    /// Kill a character, removing it from all applicable places.
+    /// </summary>
+    /// <param name="character">The character to kill.</param>
     private void KillCharacter(CharacterInstance character)
     {
         // check if the character is a party member
-        if (party.Exists(chr => chr.uniqueCharacterId == character.uniqueCharacterId))
+        if (party.Exists(chr => chr.UniqueCharacterId == character.UniqueCharacterId))
             partyMemberDiedThisTurn = true;
 
         characters.Remove(character);
@@ -702,13 +847,13 @@ public class BattleManager : MonoBehaviour
 
         if (character.IsPlayerTeam)
         {
-            playerTeam.RemoveAll(chr => chr.uniqueCharacterId == character.uniqueCharacterId);
-            party.RemoveAll(chr => chr.uniqueCharacterId == character.uniqueCharacterId);
+            playerTeam.RemoveAll(chr => chr.UniqueCharacterId == character.UniqueCharacterId);
+            party.RemoveAll(chr => chr.UniqueCharacterId == character.UniqueCharacterId);
             playerTeamUI.RemoveCharacter(character);
         }
         else
         {
-            enemyTeam.RemoveAll(chr => chr.uniqueCharacterId == character.uniqueCharacterId);
+            enemyTeam.RemoveAll(chr => chr.UniqueCharacterId == character.UniqueCharacterId);
             enemyTeamUI.RemoveCharacter(character);
         }
     }
@@ -745,6 +890,10 @@ public class BattleManager : MonoBehaviour
         partyMemberSelectionUIGO.SetActive(true);
     }
 
+    /// <summary>
+    /// Add an active party member and apply all encounter modifiers to it.
+    /// </summary>
+    /// <param name="partyMember">The party member to add.</param>
     private void AddActivePartyMember(PartyMemberInstance partyMember)
     {
         playerTeam.Add(partyMember);
@@ -754,12 +903,14 @@ public class BattleManager : MonoBehaviour
         foreach (EncounterModifierData modifier in encounterManager.CurrentEncounter.Modifiers)
         {
             foreach (StatusEffectData effect in modifier.Effects)
-            {
                 partyMember.ApplyStatusEffect(new StatusEffectInstance(effect, 99, 0, null, partyMember), false);
-            }
         }
     }
 
+    /// <summary>
+    /// Add an enemy, initialize it, and apply all encounter modifiers to it.
+    /// </summary>
+    /// <param name="enemy">The enemy to add.</param>
     private void AddEnemy(EnemyInstance enemy)
     {
         enemy.Init();  // enemies need to be initialized somewhere, here is the place that makes sense to do so
@@ -772,12 +923,14 @@ public class BattleManager : MonoBehaviour
         foreach (EncounterModifierData modifier in encounterManager.CurrentEncounter.Modifiers)
         {
             foreach (StatusEffectData effect in modifier.Effects)
-            {
                 enemy.ApplyStatusEffect(new StatusEffectInstance(effect, 99, 0, null, enemy), false);
-            }
         }
     }
 
+    /// <summary>
+    /// Set the round to a provided value and update the UI to reflect the new value.
+    /// </summary>
+    /// <param name="round">The new round value.</param>
     private void SetRound(int round)
     {
         this.round = round;

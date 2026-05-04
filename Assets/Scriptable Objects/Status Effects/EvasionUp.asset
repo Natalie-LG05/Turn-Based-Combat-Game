@@ -16,5 +16,12 @@ MonoBehaviour:
   _id: evasion_up
   _description: Evasion increased by {i}%.
   _type: 0
+  _categories: 0c000000
   _iconColor: {r: 0.6117647, g: 1, b: 0.27058825, a: 1}
   _isPermanent: 0
+  _statIncreases:
+  - _stat: 8
+    _multiplier: 1
+    _fixedStrength: 0
+    _isStrengthFixed: 0
+  _statDecreases: []

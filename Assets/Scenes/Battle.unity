@@ -176,7 +176,7 @@ MonoBehaviour:
   nameText: {fileID: 983587761}
   levelText: {fileID: 1380557916}
   descriptionText: {fileID: 1849692859}
-  InfoContainer: {fileID: 801002757}
+  infoContainer: {fileID: 801002757}
 --- !u!225 &12650054
 CanvasGroup:
   m_ObjectHideFlags: 0
@@ -6601,9 +6601,33 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Party
   _partyMembers:
-  - _level: 5
+  - _characterData: {fileID: 0}
+    _level: 6
+    _isPlayerTeam: 0
+    baseStatPoints: 0
+    additionalStatPoints: 0
+    _uniqueCharacterId: 
     _partyMemberData: {fileID: 11400000, guid: 6d007893202b48f47955c5790493674e, type: 2}
-  - _level: 5
+  - _characterData: {fileID: 0}
+    _level: 5
+    _isPlayerTeam: 0
+    baseStatPoints: 0
+    additionalStatPoints: 0
+    _uniqueCharacterId: 
+    _partyMemberData: {fileID: 11400000, guid: 6d007893202b48f47955c5790493674e, type: 2}
+  - _characterData: {fileID: 0}
+    _level: 4
+    _isPlayerTeam: 0
+    baseStatPoints: 0
+    additionalStatPoints: 0
+    _uniqueCharacterId: 
+    _partyMemberData: {fileID: 11400000, guid: 6d007893202b48f47955c5790493674e, type: 2}
+  - _characterData: {fileID: 0}
+    _level: 3
+    _isPlayerTeam: 0
+    baseStatPoints: 0
+    additionalStatPoints: 0
+    _uniqueCharacterId: 
     _partyMemberData: {fileID: 11400000, guid: 6d007893202b48f47955c5790493674e, type: 2}
 --- !u!1 &1986164648
 GameObject:
