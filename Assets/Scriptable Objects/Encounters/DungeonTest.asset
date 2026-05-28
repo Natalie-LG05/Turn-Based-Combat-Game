@@ -1,0 +1,68 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 537f0a1829c812d4fb533d5b25fbd2aa, type: 3}
+  m_Name: DungeonTest
+  m_EditorClassIdentifier: Assembly-CSharp::EncounterData
+  _name: Dungeon - Testing
+  _id: dungeon_test
+  _description: Encounter used for testing things.
+  _type: 5
+  _difficultyLevel: 7
+  _area: {fileID: 11400000, guid: 30eb7a8465ecf61458c823b859cb2d36, type: 2}
+  _modifiers:
+  - {fileID: 11400000, guid: 7a6bb238ebf318649b3467f0dc57b862, type: 2}
+  _waves:
+  - _enemies:
+    - _characterData: {fileID: 11400000, guid: 56814c1c6d93d2a498966674adc0bc31, type: 2}
+      _level: 4
+      _isPlayerTeam: 0
+      baseStatPoints: 71
+      additionalStatPoints: 0
+      _uniqueCharacterId: 5b9efd77-a21d-4f8b-8152-9d2b71ccc127
+      _enemyData: {fileID: 11400000, guid: 56814c1c6d93d2a498966674adc0bc31, type: 2}
+    - _characterData: {fileID: 11400000, guid: 56814c1c6d93d2a498966674adc0bc31, type: 2}
+      _level: 4
+      _isPlayerTeam: 0
+      baseStatPoints: 71
+      additionalStatPoints: 0
+      _uniqueCharacterId: 13111281-4385-48fc-8304-e49887d81eb7
+      _enemyData: {fileID: 11400000, guid: 56814c1c6d93d2a498966674adc0bc31, type: 2}
+  - _enemies:
+    - _characterData: {fileID: 11400000, guid: f685163ae6b99fe40aec5e781b00f8d4, type: 2}
+      _level: 5
+      _isPlayerTeam: 0
+      baseStatPoints: 78
+      additionalStatPoints: 0
+      _uniqueCharacterId: 5bd3b565-190c-4362-bfb5-3deafacce549
+      _enemyData: {fileID: 11400000, guid: f685163ae6b99fe40aec5e781b00f8d4, type: 2}
+    - _characterData: {fileID: 11400000, guid: f685163ae6b99fe40aec5e781b00f8d4, type: 2}
+      _level: 5
+      _isPlayerTeam: 0
+      baseStatPoints: 78
+      additionalStatPoints: 0
+      _uniqueCharacterId: f8a0b6c1-bc37-4d29-bd05-d9024112d281
+      _enemyData: {fileID: 11400000, guid: f685163ae6b99fe40aec5e781b00f8d4, type: 2}
+  - _enemies:
+    - _characterData: {fileID: 11400000, guid: 56814c1c6d93d2a498966674adc0bc31, type: 2}
+      _level: 7
+      _isPlayerTeam: 0
+      baseStatPoints: 92
+      additionalStatPoints: 0
+      _uniqueCharacterId: 8e3a37a5-d6a2-4262-afbe-718d41ff2973
+      _enemyData: {fileID: 11400000, guid: 56814c1c6d93d2a498966674adc0bc31, type: 2}
+    - _characterData: {fileID: 11400000, guid: f685163ae6b99fe40aec5e781b00f8d4, type: 2}
+      _level: 7
+      _isPlayerTeam: 0
+      baseStatPoints: 92
+      additionalStatPoints: 0
+      _uniqueCharacterId: 51db40d0-9e5d-4ac7-bee4-576b72237e7f
+      _enemyData: {fileID: 11400000, guid: f685163ae6b99fe40aec5e781b00f8d4, type: 2}

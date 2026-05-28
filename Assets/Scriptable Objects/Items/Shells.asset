@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5de7214a0bee9b24ab3bb947a769c379, type: 3}
+  m_Name: Shells
+  m_EditorClassIdentifier: Assembly-CSharp::ItemData
+  _name: Shells
+  _id: shells
+  _description: A very common currency. Can be used to buy things from the shop.
+  _category: 2
+  _type: 1
+  _iconColor: {r: 0.9037246, g: 0.9622642, b: 0.47750086, a: 1}

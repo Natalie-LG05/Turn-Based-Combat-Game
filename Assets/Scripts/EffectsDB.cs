@@ -9,52 +9,10 @@ public class EffectsDB
 {
     public static Dictionary<string, Effect> StatusEffects { get; private set; } = new Dictionary<string, Effect>()
     {
-        // Standard stat ups
-        {
-            "attack_up",
-            new Effect()
-            {
-                
-            }
-        },
-        {
-            "defense_up",
-            new Effect()
-            {
-                
-            }
-        },
-        {
-            "evasion_up",
-            new Effect()
-            {
-                
-            }
-        },
-        // Standard stat downs
-        {
-            "speed_down",
-            new Effect()
-            {
-                
-            } 
-        },
         // Move statuses
-        {
-            "whirlpool",
-            new Effect()
-            {
-                
-            }
-        },
-        // Ability statuses
-        {
-            "hard_shell",
-            new Effect()
-            {
 
-            }
-        },
+        // Ability statuses
+
         // Encounter modifier statuses
         {
             "fast_crabs",
@@ -64,6 +22,10 @@ public class EffectsDB
                 {
                     if (character.CharacterData.Categories.Contains(CharacterCategory.Crab))
                         character.AddModifier(Stat.Speed, 1.5f, statusEffect.StatusEffectData.Id);
+                },
+                OnRemove = (CharacterInstance character, StatusEffectInstance statusEffect) =>
+                {
+                    character.RemoveModifier(Stat.Speed, statusEffect.StatusEffectData.Id);
                 }
             }
         },
@@ -92,8 +54,7 @@ public class EffectsDB
             {
                 OnStatusGained = (CharacterInstance character, StatusEffectInstance statusEffect, AbilityData ability, StatusEffectInstance triggeringStatusEffect) =>
                 {
-                    // remove the triggering status effect (if it increases evasion) and replace it with the same effect with double the power
-                    // TODO: Only increase the power of the evasion up part, not the entire effect (do after making modular status effects)
+                    // remove the triggering status effect (if it increases evasion) and replace it with the same effect with double the multiplier on the evasion up effect
                     if (triggeringStatusEffect.StatusEffectData.Categories.Contains(StatusEffectCategory.EvasionUp))
                     {
                         character.RemoveStatusEffect(triggeringStatusEffect, false);
@@ -101,11 +62,39 @@ public class EffectsDB
                         StatusEffectInstance newEffect = new StatusEffectInstance(triggeringStatusEffect.StatusEffectData,
                             triggeringStatusEffect.Duration, triggeringStatusEffect.Power, triggeringStatusEffect.SourceCharacter,
                             triggeringStatusEffect.Character);
-                        StatusEffectStatModifier modifier = newEffect.StatIncreases.Where(modifier => modifier.Stat == Stat.Evasion).First();
+                        StatusEffectStatModifier modifier = newEffect.StatIncreases.Where(modifier => modifier.Stat == Stat.Evasion).FirstOrDefault();
                         modifier.Multiplier *= 2;
 
                         character.ApplyStatusEffect(newEffect, false);
                     }
+                }
+            }
+        },
+    };
+
+    public static Dictionary<string, Effect> MoveEffects = new Dictionary<string, Effect>()
+    {
+        {
+            "example_move",
+            new Effect()
+            {
+                MoveOnUse = (CharacterInstance user, MoveData move, CharacterInstance target) =>
+                {
+                    
+                }
+            }
+        },
+    };
+
+    public static Dictionary<string, Effect> ItemEffects = new Dictionary<string, Effect>()
+    {
+        {
+            "example_item",
+            new Effect()
+            {
+                ItemOnUse = (CharacterInstance user, ItemData item, List<CharacterInstance> targets) =>
+                {
+                    
                 }
             }
         },

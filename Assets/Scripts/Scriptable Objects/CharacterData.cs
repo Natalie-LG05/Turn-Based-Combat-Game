@@ -50,11 +50,11 @@ public enum CharacterCategory { Crab, Bird }
 [System.Serializable]
 public class StatSpread
 {
-    [SerializeField, Range(0,100)] private int _maxHP;
-    [SerializeField, Range(0,100)] private int _attack;
-    [SerializeField, Range(0,100)] private int _support;
-    [SerializeField, Range(0,100)] private int _defense;
-    [SerializeField, Range(0,100)] private int _speed;
+    [SerializeField, Range(0, 500)] private int _maxHP;
+    [SerializeField, Range(0, 500)] private int _attack;
+    [SerializeField, Range(0, 500)] private int _support;
+    [SerializeField, Range(0, 500)] private int _defense;
+    [SerializeField, Range(0, 500)] private int _speed;
 
     public int MaxHP { get => _maxHP; }
     public int Attack { get => _attack; }

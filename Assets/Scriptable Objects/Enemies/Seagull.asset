@@ -37,8 +37,8 @@ MonoBehaviour:
   - _abilityData: {fileID: 11400000, guid: 0a8ff3ad46da9f4478aa3e630125097f, type: 2}
     _level: 10
   _rarity: 0
-  _attackChance: 5
-  _buffChance: 20
+  _attackChance: 1
+  _buffChance: 9
   _debuffChance: 0
-  _healChance: 75
+  _healChance: 40
   _healThreshold: 50

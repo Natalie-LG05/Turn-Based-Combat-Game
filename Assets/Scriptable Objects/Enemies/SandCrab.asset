@@ -20,11 +20,11 @@ MonoBehaviour:
   _baseStatPoints: 50
   _levelupStatPoints: 7
   _statSpread:
-    _maxHP: 40
+    _maxHP: 30
     _attack: 20
-    _support: 5
-    _defense: 25
-    _speed: 10
+    _support: 15
+    _defense: 20
+    _speed: 15
   _moveLearnset:
   - _moveData: {fileID: 11400000, guid: c0183c9c14cb7a2419ffe4e89cfd8882, type: 2}
     _level: 0
@@ -38,8 +38,8 @@ MonoBehaviour:
   - _abilityData: {fileID: 11400000, guid: 14c4573371e5a6e4cba439aa1db454f4, type: 2}
     _level: 5
   _rarity: 0
-  _attackChance: 25
-  _buffChance: 50
-  _debuffChance: 25
+  _attackChance: 2
+  _buffChance: 3
+  _debuffChance: 2
   _healChance: 0
   _healThreshold: 50

@@ -61,6 +61,13 @@ public class EnemyInstance : CharacterInstance
         get { return Moveset.Where(move => move.Categories.Contains(MoveCategory.HealUser) || move.Categories.Contains(MoveCategory.HealAlly)).ToList(); }
     }
 
+    public EnemyInstance(EnemyData enemyData, int level)
+    {
+        _enemyData = enemyData;
+        _level = level;
+        Init();
+    }
+
     /// <inheritdoc/>
     public override void Init()
     {

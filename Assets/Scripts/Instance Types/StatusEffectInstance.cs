@@ -33,10 +33,13 @@ public class StatusEffectInstance
     public CharacterInstance Character { get => _character; }
 
     /// <summary>Gets the effects of this status effect, found by its id.</summary>
-    public Effect Effects { get
+    public Effect Effects
+    {
+        get
         {
-            return EffectsDB.StatusEffects[StatusEffectData.Id];
-        } 
+            if (EffectsDB.StatusEffects.ContainsKey(StatusEffectData.Id)) return EffectsDB.StatusEffects[StatusEffectData.Id];
+            else return null;
+        }
     }
 
     /// <summary>

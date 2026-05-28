@@ -9,7 +9,7 @@ using UnityEngine;
 public class CharacterInstance
 {
     [SerializeField, HideInInspector] protected CharacterData _characterData;
-    protected CharacterUI _characterUI;
+    protected BattleCharacterUI _characterUI;
 
     [SerializeField, Min(1)] protected int _level;
 
@@ -24,7 +24,7 @@ public class CharacterInstance
 
     [SerializeField, HideInInspector] protected string _uniqueCharacterId;
 
-    protected Dictionary<Stat, int> _stats;
+    protected Dictionary<Stat, int> _baseStats;
     protected Dictionary<Stat, int> _additionalStats;
 
     protected List<MoveData> _moveset;
@@ -33,7 +33,7 @@ public class CharacterInstance
     /// <summary>Gets the character data this character instance is based off of.</summary>
     public CharacterData CharacterData { get => _characterData; }
     /// <summary>Gets or sets the characterUI assigned to display info about this character.</summary>
-    public CharacterUI CharacterUI { get => _characterUI; set => _characterUI = value; }
+    public BattleCharacterUI CharacterUI { get => _characterUI; set => _characterUI = value; }
 
     /// <summary>Gets the character's level.</summary>
     public int Level { get => _level; }
@@ -54,7 +54,7 @@ public class CharacterInstance
     public List<StatusEffectInstance> StatusEffects { get; private set; }
 
     /// <summary>Gets a dictionary containing the current base stats of the character at its current level.</summary>
-    public Dictionary<Stat, int> Stats { get => _stats; }
+    public Dictionary<Stat, int> BaseStats { get => _baseStats; }
     /// <summary>Gets a dictionary containing the current additional stats of the character.</summary>
     public Dictionary<Stat, int> AdditionalStats { get => _additionalStats; }
     /// <summary>Gets a dictionary containing the temporary mid-combat stat modifiers the character has.</summary>
@@ -85,7 +85,7 @@ public class CharacterInstance
 
         InitializeAdditionalStats();
 
-        CalculateTotalStatPoints();
+        CalculateBaseStatPoints();
         CalculateBaseStats();
 
         ResetStatusEffects();
@@ -106,7 +106,7 @@ public class CharacterInstance
 
         // trigger start of combat effects of abilities on this character
         foreach (AbilityData ability in Abilities)
-            ability.Effects.OnBattleStart?.Invoke(this, ability);
+            ability.Effects?.OnBattleStart?.Invoke(this, ability);
     }
 
     /// <summary>
@@ -116,9 +116,9 @@ public class CharacterInstance
     {
         // trigger start of round effects of status effects and abilities on this character
         foreach (StatusEffectInstance status in StatusEffects)
-            status.Effects.OnRoundStart?.Invoke(this, status, null);
+            status.Effects?.OnRoundStart?.Invoke(this, status, null);
         foreach (AbilityData ability in Abilities)
-            ability.Effects.OnRoundStart?.Invoke(this, null, ability);
+            ability.Effects?.OnRoundStart?.Invoke(this, null, ability);
     }
 
     /// <summary>
@@ -128,9 +128,9 @@ public class CharacterInstance
     {
         // trigger end of round effects of status effects and abilities on this character
         foreach (StatusEffectInstance status in StatusEffects)
-            status.Effects.OnRoundEnd?.Invoke(this, status, null);
+            status.Effects?.OnRoundEnd?.Invoke(this, status, null);
         foreach (AbilityData ability in Abilities)
-            ability.Effects.OnRoundEnd?.Invoke(this, null, ability);
+            ability.Effects?.OnRoundEnd?.Invoke(this, null, ability);
     }
 
     /// <summary>
@@ -142,11 +142,11 @@ public class CharacterInstance
         foreach (StatusEffectInstance status in StatusEffects)
         {
             status.TurnStart();  // signal to each status effect that this character has begun a new turn
-            status.Effects.OnTurnStart?.Invoke(this, status, null);
+            status.Effects?.OnTurnStart?.Invoke(this, status, null);
         }
         // trigger start of turn effects of abilities this character has
         foreach (AbilityData ability in Abilities)
-            ability.Effects.OnTurnStart?.Invoke(this, null, ability);
+            ability.Effects?.OnTurnStart?.Invoke(this, null, ability);
     }
 
     /// <summary>
@@ -156,9 +156,9 @@ public class CharacterInstance
     {
         // trigger end of turn effects of status effects and abilities on this character
         foreach (StatusEffectInstance status in StatusEffects)
-            status.Effects.OnTurnEnd?.Invoke(this, status, null);
+            status.Effects?.OnTurnEnd?.Invoke(this, status, null);
         foreach (AbilityData ability in Abilities)
-            ability.Effects.OnTurnEnd?.Invoke(this, null, ability);
+            ability.Effects?.OnTurnEnd?.Invoke(this, null, ability);
 
         // Signal to each status effect on this character that their turn has ended, possibly decreasing their duration and/or expiring them
         List<StatusEffectInstance> expiredEffects = new List<StatusEffectInstance>();
@@ -171,6 +171,17 @@ public class CharacterInstance
     }
 
     /// <summary>
+    /// Signal to this character that a battle has started, resetting it back to its normal state.
+    /// </summary>
+    public void BattleEnd()
+    {
+        ResetStatusEffects();
+        ResetStatModifiers();
+
+        _currentHP = MaxHP;
+    }
+
+    /// <summary>
     /// Handle being targeted by a damaging effect of a move.
     /// </summary>
     /// <param name="user">The character that used the move.</param>
@@ -180,21 +191,21 @@ public class CharacterInstance
     {
         // calculate the basic damage based on the move effect power, user's level,
         // and ratio of the user's attack to the defender's defense (minimum of 1 damage)
-        int damage = Mathf.RoundToInt((effect.Power / 7.5f) * (((user.Level - 1) / 10f) + 1) * ((float)user.Attack / Defense)) + 1;
+        int damage = Mathf.FloorToInt((effect.Power / 7.5f) * (((user.Level - 1) / 10f) + 1) * ((float)user.Attack / Defense) + 0.5f) + 1;
 
         // triger effects of status effects and abilities on this character that happen before taking attack damage
         foreach (StatusEffectInstance status in StatusEffects)
-            status.Effects.OnBeforeAttackDamage?.Invoke(this, status, null, user);
+            status.Effects?.OnBeforeAttackDamage?.Invoke(this, status, null, user);
         foreach (AbilityData ability in Abilities)
-            ability.Effects.OnBeforeAttackDamage?.Invoke(this, null, ability, user);
+            ability.Effects?.OnBeforeAttackDamage?.Invoke(this, null, ability, user);
 
         TakeDamage(damage);  // actually take the calculated damage
 
         // triger effects of status effects and abilities on this character that happen after taking attack damage
         foreach (StatusEffectInstance status in StatusEffects)
-            status.Effects.OnAfterAttackDamage?.Invoke(this, status, null, user);
+            status.Effects?.OnAfterAttackDamage?.Invoke(this, status, null, user);
         foreach (AbilityData ability in Abilities)
-            ability.Effects.OnAfterAttackDamage?.Invoke(this, null, ability, user);
+            ability.Effects?.OnAfterAttackDamage?.Invoke(this, null, ability, user);
     }
 
     /// <summary>
@@ -235,7 +246,7 @@ public class CharacterInstance
         float power = effect.Power * (1 + (user.Support / 100f));
 
         // the calculated power is either the flat amount to heal, or percentage to heal depending on if the effect is a percentage heal or not
-        int healAmount = effect.IsPercentageHeal ? Mathf.RoundToInt((power / 100f) * MaxHP) : Mathf.RoundToInt(power);
+        int healAmount = effect.IsPercentageHeal ? Mathf.FloorToInt((power / 100f) * MaxHP + 0.5f) : Mathf.FloorToInt(power + 0.5f);
         Heal(healAmount);
     }
 
@@ -286,15 +297,15 @@ public class CharacterInstance
     {
         StatusEffects.Add(effect);
         effect.OnApply();
-        effect.Effects.OnApply?.Invoke(this, effect);  // trigger on apply effects of this status
+        effect.Effects?.OnApply?.Invoke(this, effect);  // trigger on apply effects of this status
 
         if (procEffects)
         {
             // triger effects of status effects and abilities on this character that happen when a status effect is gained
             foreach (StatusEffectInstance status in StatusEffects)
-                status.Effects.OnStatusGained?.Invoke(this, status, null, effect);
+                status.Effects?.OnStatusGained?.Invoke(this, status, null, effect);
             foreach (AbilityData ability in Abilities)
-                ability.Effects.OnStatusGained?.Invoke(this, null, ability, effect);
+                ability.Effects?.OnStatusGained?.Invoke(this, null, ability, effect);
         }
 
         if (CharacterUI != null) CharacterUI.SetEffects(StatusEffects);  // update UI
@@ -309,19 +320,19 @@ public class CharacterInstance
     {
         // on expire effects of status effects and abilities are not triggered in
         // special cases such as encounter modifiers being added or abilities adding their statuses
-        if (procEffects) effect.Effects.OnExpire?.Invoke(this, effect);
+        if (procEffects) effect.Effects?.OnExpire?.Invoke(this, effect);
 
         effect.OnRemove();
-        effect.Effects.OnRemove?.Invoke(this, effect);  // trigger any effects of this status effect that trigger when it is removed
-        StatusEffects.Remove(effect);
+        effect.Effects?.OnRemove?.Invoke(this, effect);  // trigger any effects of this status effect that trigger when it is removed
+        StatusEffects?.Remove(effect);
 
         if (procEffects)
         {
             // trigger effects of status effects and abilities on this character that happen when a status effect is removed
             foreach (StatusEffectInstance status in StatusEffects)
-                status.Effects.OnStatusRemoved?.Invoke(this, status, null, effect);
+                status.Effects?.OnStatusRemoved?.Invoke(this, status, null, effect);
             foreach (AbilityData ability in Abilities)
-                ability.Effects.OnStatusRemoved?.Invoke(this, null, ability, effect);
+                ability.Effects?.OnStatusRemoved?.Invoke(this, null, ability, effect);
         }
 
         if (CharacterUI != null) CharacterUI.SetEffects(StatusEffects);  // update UI
@@ -337,7 +348,7 @@ public class CharacterInstance
         if (StatusEffects.Count > 0 && StatusEffects.Exists(status => status.StatusEffectData.Id == effectId))
         {
             // if this character has this status effect, remove it
-            StatusEffectInstance effect = StatusEffects.Where(status => status.StatusEffectData.Id == effectId).First();
+            StatusEffectInstance effect = StatusEffects.Where(status => status.StatusEffectData.Id == effectId).FirstOrDefault();
             if (effect != null) RemoveStatusEffect(effect, procEffects);
         }
     }
@@ -364,6 +375,21 @@ public class CharacterInstance
     }
 
     /// <summary>
+    /// Boost a move in this character's moveset, replacing it with its boosted version. Unboosts previously boosted move, replacing it with its normal version.
+    /// </summary>
+    /// <param name="move">The move to boost.</param>
+    public void BoostMove(MoveData move)
+    {
+        if (move == null) return;
+
+        // if there is already a boosted move, unboost it
+        MoveData boostedMove = Moveset.Where(mv => mv.IsBoosted).FirstOrDefault();
+        if (boostedMove != null) _moveset[Moveset.IndexOf(boostedMove)] = boostedMove.AlternateVersion;
+
+        _moveset[Moveset.IndexOf(move)] = move.AlternateVersion;  // replace the provided move in this character's moveset with its boosted version
+    }
+
+    /// <summary>
     /// Make this character take some amount of damage. Health will not go below zero.
     /// </summary>
     /// <param name="damage">The amount of damage to take.</param>
@@ -371,22 +397,22 @@ public class CharacterInstance
     {
         // trigger effects of status effects and abilities on this character that happen before taking any damage
         foreach (StatusEffectInstance status in StatusEffects)
-            status.Effects.OnBeforeDamage?.Invoke(this, status, null);
+            status.Effects?.OnBeforeDamage?.Invoke(this, status, null);
         foreach (AbilityData ability in Abilities)
-            ability.Effects.OnBeforeDamage?.Invoke(this, null, ability);
+            ability.Effects?.OnBeforeDamage?.Invoke(this, null, ability);
 
         _currentHP = Mathf.Max(0, _currentHP - damage);  // keep health from going below zero
 
         // trigger effects of status effects and abilities on this character that happen after taking any damage or when hp is changed
         foreach (StatusEffectInstance status in StatusEffects)
         {
-            status.Effects.OnAfterDamage?.Invoke(this, status, null);
-            status.Effects.OnAfterHPChanged?.Invoke(this, status, null);
+            status.Effects?.OnAfterDamage?.Invoke(this, status, null);
+            status.Effects?.OnAfterHPChanged?.Invoke(this, status, null);
         }
         foreach (AbilityData ability in Abilities)
         {
-            ability.Effects.OnAfterDamage?.Invoke(this, null, ability);
-            ability.Effects.OnAfterHPChanged?.Invoke(this, null, ability);
+            ability.Effects?.OnAfterDamage?.Invoke(this, null, ability);
+            ability.Effects?.OnAfterHPChanged?.Invoke(this, null, ability);
         }
     }
 
@@ -400,9 +426,9 @@ public class CharacterInstance
 
         // trigger effects of status effects and abilities on this character that happen when their character's hp is changed
         foreach (StatusEffectInstance status in StatusEffects)
-            status.Effects.OnAfterHPChanged?.Invoke(this, status, null);
+            status.Effects?.OnAfterHPChanged?.Invoke(this, status, null);
         foreach (AbilityData ability in Abilities)
-            ability.Effects.OnAfterHPChanged?.Invoke(this, null, ability);
+            ability.Effects?.OnAfterHPChanged?.Invoke(this, null, ability);
     }
 
     /// <summary>
@@ -465,11 +491,11 @@ public class CharacterInstance
     {
         _additionalStats = new Dictionary<Stat, int>()
         {
-            {Stat.MaxHP, 0},
-            {Stat.Attack, 0},
-            {Stat.Support, 0},
-            {Stat.Defense, 0},
-            {Stat.Speed, 0},
+            { Stat.MaxHP, 0 },
+            { Stat.Attack, 0 },
+            { Stat.Support, 0 },
+            { Stat.Defense, 0 },
+            { Stat.Speed, 0 }
         };
     }
 
@@ -478,13 +504,13 @@ public class CharacterInstance
     /// </summary>
     protected void CalculateBaseStats()
     {
-        _stats = new Dictionary<Stat, int>()
+        _baseStats = new Dictionary<Stat, int>()
         {
-            {Stat.MaxHP, Mathf.RoundToInt((baseStatPoints + additionalStatPoints) * (_characterData.StatSpread.MaxHP / 100.0f))},
-            {Stat.Attack, Mathf.RoundToInt((baseStatPoints + additionalStatPoints) * (_characterData.StatSpread.Attack / 100.0f))},
-            {Stat.Support, Mathf.RoundToInt((baseStatPoints + additionalStatPoints) * (_characterData.StatSpread.Support / 100.0f))},
-            {Stat.Defense, Mathf.RoundToInt((baseStatPoints + additionalStatPoints) * (_characterData.StatSpread.Defense / 100.0f))},
-            {Stat.Speed, Mathf.RoundToInt((baseStatPoints + additionalStatPoints) * (_characterData.StatSpread.Speed / 100.0f))},
+            {Stat.MaxHP, Mathf.FloorToInt((baseStatPoints + additionalStatPoints) * (_characterData.StatSpread.MaxHP / 100.0f) + 0.5f)},
+            {Stat.Attack, Mathf.FloorToInt((baseStatPoints + additionalStatPoints) * (_characterData.StatSpread.Attack / 100.0f) + 0.5f)},
+            {Stat.Support, Mathf.FloorToInt((baseStatPoints + additionalStatPoints) * (_characterData.StatSpread.Support / 100.0f) + 0.5f)},
+            {Stat.Defense, Mathf.FloorToInt((baseStatPoints + additionalStatPoints) * (_characterData.StatSpread.Defense / 100.0f) + 0.5f)},
+            {Stat.Speed, Mathf.FloorToInt((baseStatPoints + additionalStatPoints) * (_characterData.StatSpread.Speed / 100.0f) + 0.5f)},
         };
     }
 
@@ -524,7 +550,7 @@ public class CharacterInstance
     /// <summary>
     /// Calculate and set the total stat points this character has based on its base stat points and level.
     /// </summary>
-    protected void CalculateTotalStatPoints()
+    protected void CalculateBaseStatPoints()
     {
         baseStatPoints = _characterData.BaseStatPoints + (_characterData.LevelupStatPoints * (_level - 1));
     }
@@ -537,13 +563,13 @@ public class CharacterInstance
     protected int GetStat(Stat stat)
     {
         // The value of a stat, before temporary modifiers, is the base stat plus any bonus permanent stat increases
-        int value = _stats[stat] + AdditionalStats[stat];
+        int value = _baseStats[stat] + AdditionalStats[stat];
 
         // Multiply the base value by each active stat modifier for that stat (if there are any)
         if (StatModifiers[stat].Count > 0)
         {
             List<float> modifierVals = StatModifiers[stat].Select(mod => mod.Power).ToList();
-            value = Mathf.RoundToInt(value * modifierVals.Aggregate(1f, (acc, next) => acc * next));
+            value = Mathf.FloorToInt(value * modifierVals.Aggregate(1f, (acc, next) => acc * next) + 0.5f);
         }
 
         return value;
@@ -554,12 +580,21 @@ public class CharacterInstance
     /// </summary>
     protected void DetermineMoveset()
     {
+        MoveData moveToBoost = null;
+        if (Moveset != null && Moveset.Count > 0)
+        {
+            MoveData boostedMove = Moveset.Where(mv => mv.IsBoosted).FirstOrDefault();
+            if (boostedMove != null) moveToBoost = boostedMove.AlternateVersion;
+        }
+
         _moveset = new List<MoveData>();
         foreach (MoveLevelPair mlp in _characterData.MoveLearnset)
         {
             if (mlp.Level <= _level)
                 _moveset.Add(mlp.MoveData);
         }
+
+        BoostMove(moveToBoost);
     }
 
     /// <summary>
@@ -575,6 +610,22 @@ public class CharacterInstance
                 _abilities.Add(mlp.AbilityData);
             }
         }
+    }
+
+    /// <summary>
+    /// Level up this character.
+    /// </summary>
+    public void LevelUp()
+    {
+        if (Level >= 100) return;  // max level is lvl 100
+
+        _level++;
+
+        CalculateBaseStatPoints();
+        CalculateBaseStats();
+
+        DetermineMoveset();
+        DetermineAbilities();
     }
 }
 

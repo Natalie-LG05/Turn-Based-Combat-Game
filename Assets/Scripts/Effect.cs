@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+
 /// <summary>
 /// Represents custom effects of a status effect or an ability. Each instance can set the functionality of each of several functions, which will be called at the appropriate time.
 /// </summary>
@@ -129,4 +131,21 @@ public class Effect
     /// <br/>ability: the ability with this effect (if any)
     /// </summary>
     public System.Action<CharacterInstance, StatusEffectInstance, AbilityData> OnTurnEnd { get; set; }
+
+    /// <summary>
+    /// Triggered when an item is used.
+    /// <br/><br/>Arguments: 
+    /// <br/>user: the character that used this move or item
+    /// <br/>item: the item with this effect (if any)
+    /// <br/>target: a list of the characters targetted by this effect
+    /// </summary>
+    public System.Action<CharacterInstance, ItemData, List<CharacterInstance>> ItemOnUse { get; set; }
+    /// <summary>
+    /// Triggered when a move is used.
+    /// <br/><br/>Arguments: 
+    /// <br/>user: the character that used this move or item
+    /// <br/>move: the move with this effect (if any)
+    /// <br/>target: the primary target of this effect
+    /// </summary>
+    public System.Action<CharacterInstance, MoveData, CharacterInstance> MoveOnUse { get; set; }
 }

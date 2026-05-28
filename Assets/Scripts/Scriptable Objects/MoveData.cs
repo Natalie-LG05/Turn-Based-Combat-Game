@@ -7,21 +7,25 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "NewMoveData", menuName = "ScriptableObjects/Move Data", order = -1000)]
 public class MoveData : ScriptableObject
 {
-    [SerializeField] protected string _name;
-    [SerializeField, Tooltip("The unique string id of this move.")] protected string _id;
-    [SerializeField, TextArea] protected string _description;
+    [SerializeField] private string _name;
+    [SerializeField, Tooltip("The unique string id of this move.")] private string _id;
+    [SerializeField, TextArea] private string _description;
 
-    [SerializeField] protected MoveType _type;
-    [SerializeField] protected List<MoveCategory> _categories;
-    [SerializeField] protected MoveElement _element;
+    [SerializeField] private MoveType _type;
+    [SerializeField] private List<MoveCategory> _categories;
+    [SerializeField] private MoveElement _element;
 
-    [SerializeField, Tooltip("The overall power to display for this move.")] protected int _power;
-    [SerializeField, Tooltip("The overall accuracy to display for this move.")] protected int _accuracy;
-    [SerializeField, Tooltip("The overall targeting type to display for this move.")] protected MoveTarget _target;
+    [SerializeField] private bool _isBoosted;
+    [SerializeField, Tooltip("Either the boosted version of this move or the normal version of this move depending on if this is a boosted version or not.")] protected MoveData _alternateVersion;
 
-    [SerializeField] protected List<MoveDamageEffect> _damageEffects;
-    [SerializeField] protected List<MoveStatusEffect> _moveStatusEffects;
-    [SerializeField] protected List<MoveHealEffect> _healEffects;
+    [SerializeField, Tooltip("The overall power to display for this move.")] private int _power;
+    [SerializeField, Tooltip("The overall accuracy to display for this move.")] private int _accuracy;
+    [SerializeField, Tooltip("The overall targeting type to display for this move.")] private BattleTargettingType _target;
+
+    [SerializeField] private List<MoveDamageEffect> _damageEffects;
+    [SerializeField] private List<MoveStatusEffect> _moveStatusEffects;
+    [SerializeField] private List<MoveHealEffect> _healEffects;
+    [SerializeField] private MoveCustomEffect _customEffect;
 
     public string Name { get => _name; }
     /// <summary>Gets the unique string id of this move.</summary>
@@ -32,16 +36,30 @@ public class MoveData : ScriptableObject
     public MoveElement Element { get => _element; }
     public List<MoveCategory> Categories { get => _categories; }
 
+    public bool IsBoosted { get => _isBoosted; }
+    /// <summary>Gets either the boosted version of thsi move or the normal version of this move depending on if this is a boosted version or not.</summary>
+    public MoveData AlternateVersion { get => _alternateVersion; }
+
     /// <summary>Gets the overall power of this move at a glance.</summary>
     public int Power { get => _power; }
     /// <summary>Gets the overall accuracy of this move at a glance.</summary>
     public int Accuracy { get => _accuracy; }
     /// <summary>Gets the overall targeting type of this move at a glance.</summary>
-    public MoveTarget Target { get => _target; }
+    public BattleTargettingType Target { get => _target; }
 
     public List<MoveDamageEffect> DamageEffects { get => _damageEffects; }
     public List<MoveStatusEffect> MoveStatusEffects { get => _moveStatusEffects; }
     public List<MoveHealEffect> HealEffects { get => _healEffects; }
+    public MoveCustomEffect CustomEffect { get => _customEffect; }
+
+    public Effect Effects
+    {
+        get
+        {
+            if (EffectsDB.MoveEffects.ContainsKey(_id)) return EffectsDB.MoveEffects[_id];
+            else return null;
+        }
+    }
 
     /// <summary>Gets a list of the elements of this move's effects.</summary>
     public List<MoveElement> Elements
@@ -94,11 +112,11 @@ public class MoveData : ScriptableObject
     }
 
     /// <summary>Gets a list of the targeting types of this move's effects.</summary>
-    public List<MoveTarget> Targets
+    public List<BattleTargettingType> Targets
     {
         get
         {
-            List<MoveTarget> targets = new List<MoveTarget>();
+            List<BattleTargettingType> targets = new List<BattleTargettingType>();
             foreach (MoveDamageEffect effect in _damageEffects) targets.Add(effect.Targets);
             foreach (MoveStatusEffect effect in _moveStatusEffects) targets.Add(effect.Targets);
             foreach (MoveHealEffect effect in _healEffects) targets.Add(effect.Targets);
@@ -150,11 +168,11 @@ public class MoveData : ScriptableObject
 
 public enum MoveType { MeleePhysical, MeleeEnhanced, RangedPhysical, RangedEnhanced, Spell }
 
-public enum MoveElement { Normal, Poison, Twilight, Abyss }
+public enum MoveElement { Normal, Poison, Twilight, Abyss, Sand }
 
 public enum MoveCategory { Attack, BuffUser, BuffAlly, DebuffEnemy, DebuffUser, DamageUser, DebuffAlly, DamageAlly, BuffEnemy, HealEnemy, HealUser, HealAlly }
 
-public enum MoveTarget { SingleOther, SingleAlly, SingleEnemy, SingleAny, User, UserTeam, EnemyTeam, AnyTeam, OppositeTeam, AllOther, All }
+public enum BattleTargettingType { SingleOther, SingleAlly, SingleEnemy, SingleAny, User, UserTeam, EnemyTeam, AnyTeam, OppositeTeam, AllOther, All }
 
 /// <summary>
 /// A base class that represents an effect of a move.
@@ -162,7 +180,7 @@ public enum MoveTarget { SingleOther, SingleAlly, SingleEnemy, SingleAny, User, 
 [System.Serializable]
 public class MoveEffect
 {
-    [SerializeField] protected MoveTarget _targets;
+    [SerializeField] protected BattleTargettingType _targets;
     [SerializeField, Range(0, 100)] protected int _accuracy;
     [SerializeField] protected int _power;
     [SerializeField] protected MoveElement _element;
@@ -170,7 +188,7 @@ public class MoveEffect
     [SerializeField] protected bool _alwaysHitsSelf;
     [SerializeField] protected bool _alwaysHits;
 
-    public MoveTarget Targets { get => _targets; }
+    public BattleTargettingType Targets { get => _targets; }
     public int Accuracy { get => _accuracy; }
     public int Power { get => _power; }
     public MoveElement Element { get => _element; }
@@ -214,4 +232,19 @@ public class MoveHealEffect : MoveEffect
     [SerializeField] private bool _isPercentageHeal;
 
     public bool IsPercentageHeal { get => _isPercentageHeal; }
+}
+
+/// <summary>
+/// A class used to provide data for additional move effects to custom effects of moves that are defined in EffectsDB.
+/// </summary>
+[System.Serializable]
+public class MoveCustomEffect
+{
+    [SerializeField] private List<MoveDamageEffect> _damageEffects;
+    [SerializeField] private List<MoveStatusEffect> _statusEffects;
+    [SerializeField] private List<MoveHealEffect> _healEffects;
+
+    public List<MoveDamageEffect> DamageEffects { get => _damageEffects; }
+    public List<MoveStatusEffect> StatusEffects { get => _statusEffects; }
+    public List<MoveHealEffect> HealEffects { get => _healEffects; }
 }

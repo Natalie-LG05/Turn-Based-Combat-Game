@@ -3,11 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
-public enum BattleState { Setup, ActionSelection, MoveSelection, TargetSelection, PartyScreen, ReplaceDeadPartyMember, EnemyTurn, PerformMove, RoundEnd, Busy }
+public enum BattleState { Setup, ActionSelection, MoveSelection, MoveTargetSelection, PartyScreen, ReplaceDeadPartyMember, ItemTargetSelection, EnemyTurn, PerformMove, RoundEnd, Busy, PlayerWin, PlayerLose }
 
 /// <summary>
-/// Manages battle, containing the main gameplay loop during combat, handling much of the logic.
+/// Manages battle, containing the main gameplay loop during combat and handling much of the logic.
 /// </summary>
 public class BattleManager : MonoBehaviour
 {
@@ -19,33 +21,45 @@ public class BattleManager : MonoBehaviour
     /// <summary>Gets the character who's turn it currently is.</summary>
     public CharacterInstance CurrentCharacter { get { return turnQueue.Peek(); } }
 
-    private List<PartyMemberInstance> party;
+    private List<PartyMemberInstance> alivePartyMembers;
+    private List<PartyMemberInstance> deadPartyMembers;
 
     private List<PartyMemberInstance> playerTeam;
     private List<EnemyInstance> enemyTeam;
     private List<CharacterInstance> characters;
 
     private Queue<CharacterInstance> turnQueue;
+    [SerializeField] private TurnOrderUI turnOrderUI;
+
+    [SerializeField] private BattleEncounterInfoUI encounterInfoUI;
+    [SerializeField] private Image background;
 
     [SerializeField] private TeamUI playerTeamUI;
     [SerializeField] private TeamUI enemyTeamUI;
 
-    [SerializeField] private EncounterInfoUI encounterInfoUI;
-    [SerializeField] private TurnOrderUI turnOrderUI;
-
     private EncounterManager encounterManager;
     private PartyManager partyManager;
-
-    private BattleDialogueBox dialogueBox;
-    private Queue<string> dialogueQueue;
-    private MoveSelectionUI moveSelectionUI;
-    private PartyMemberSelectionUI partyMemberSelectionUI;
+    private InventoryManager inventoryManager;
 
     [SerializeField] private GameObject dialogueBoxGO;
+    private BattleDialogueBox dialogueBox;
+    private Queue<string> dialogueQueue;
+
     [SerializeField] private GameObject actionSelectionButtons;
+
     [SerializeField] private GameObject moveSelectionUIGO;
     [SerializeField] private GameObject moveInfoUIGO;
+    private MoveSelectionUI moveSelectionUI;
+
     [SerializeField] private GameObject partyMemberSelectionUIGO;
+    private PartyMemberSelectionUI partyMemberSelectionUI;
+
+    [SerializeField] private GameObject winScreenUIGO;
+    private WinScreenUI winScreenUI;
+
+    [SerializeField] private GameObject loseScreenUIGO;
+    private LoseScreenUI loseScreenUI;
+    [SerializeField] private ItemData shellsItemData;
 
     private MoveData selectedMove;
     private bool partyMemberDiedThisTurn;
@@ -53,7 +67,8 @@ public class BattleManager : MonoBehaviour
     // Unity game object methods
     private void Awake()
     {
-        party = new List<PartyMemberInstance>();
+        alivePartyMembers = new List<PartyMemberInstance>();
+        deadPartyMembers = new List<PartyMemberInstance>();
 
         playerTeam = new List<PartyMemberInstance>();
         enemyTeam = new List<EnemyInstance>();
@@ -63,6 +78,8 @@ public class BattleManager : MonoBehaviour
         dialogueBox = dialogueBoxGO.GetComponent<BattleDialogueBox>();
         moveSelectionUI = moveSelectionUIGO.GetComponent<MoveSelectionUI>();
         partyMemberSelectionUI = partyMemberSelectionUIGO.GetComponent<PartyMemberSelectionUI>();
+        winScreenUI = winScreenUIGO.GetComponent<WinScreenUI>();
+        loseScreenUI = loseScreenUIGO.GetComponent<LoseScreenUI>();
 
         dialogueQueue = new Queue<string>();
 
@@ -73,6 +90,7 @@ public class BattleManager : MonoBehaviour
     {
         encounterManager = EncounterManager.Instance;
         partyManager = PartyManager.Instance;
+        inventoryManager = InventoryManager.Instance;
 
         SetupBattle();
     }
@@ -81,7 +99,7 @@ public class BattleManager : MonoBehaviour
     {
         switch (state)
         {
-            case BattleState.TargetSelection:
+            case BattleState.MoveTargetSelection:
                 // pressing escape cancels the move selection that was made and returns to the move selection screen
                 if (Keyboard.current.escapeKey.wasPressedThisFrame)
                 {
@@ -138,11 +156,11 @@ public class BattleManager : MonoBehaviour
         {
             // these target options don't rely on the selected target, so simply use the move
             // with the user as the target, otherwise the player needs to select a target
-            if (move.Target is MoveTarget.User or MoveTarget.UserTeam or MoveTarget.EnemyTeam or MoveTarget.All or MoveTarget.AllOther)
+            if (move.Target is BattleTargettingType.User or BattleTargettingType.UserTeam or BattleTargettingType.EnemyTeam or BattleTargettingType.All or BattleTargettingType.AllOther)
                 StartCoroutine(PlayerMove(move, CurrentCharacter));
             else
             {
-                state = BattleState.TargetSelection;
+                state = BattleState.MoveTargetSelection;
 
                 selectedMove = move;
                 ShowActionSelectionScreen();
@@ -157,16 +175,16 @@ public class BattleManager : MonoBehaviour
     /// <param name="target"></param>
     public void TargetOptionClicked(CharacterInstance target)
     {
-        if (state == BattleState.TargetSelection)
+        if (state == BattleState.MoveTargetSelection)
         {
             List<CharacterInstance> validTargets = new List<CharacterInstance>();
-            if (selectedMove.Target == MoveTarget.SingleOther)
+            if (selectedMove.Target == BattleTargettingType.SingleOther)
                 validTargets = characters.Where(chr => chr != CurrentCharacter).ToList();
-            else if (selectedMove.Target == MoveTarget.SingleEnemy)
+            else if (selectedMove.Target == BattleTargettingType.SingleEnemy)
                 validTargets = enemyTeam.ConvertAll(chr => (CharacterInstance)chr);
-            else if (selectedMove.Target == MoveTarget.SingleAlly)
+            else if (selectedMove.Target == BattleTargettingType.SingleAlly)
                 validTargets = playerTeam.ConvertAll(chr => (CharacterInstance)chr);
-            else if (selectedMove.Target == MoveTarget.SingleAny || selectedMove.Target == MoveTarget.AnyTeam || selectedMove.Target == MoveTarget.OppositeTeam)
+            else if (selectedMove.Target == BattleTargettingType.SingleAny || selectedMove.Target == BattleTargettingType.AnyTeam || selectedMove.Target == BattleTargettingType.OppositeTeam)
                 validTargets = characters;
 
             if (validTargets.Contains(target))
@@ -185,7 +203,16 @@ public class BattleManager : MonoBehaviour
 
             // show the party screen and update the UI
             ShowPartyScreen();
-            partyMemberSelectionUI.SetParty(party, partyMemberDiedThisTurn);  // TODO: keep track of and show dead party members
+            partyMemberSelectionUI.SetParty(alivePartyMembers, deadPartyMembers, partyMemberDiedThisTurn);
+        }
+    }
+
+    public void RunButtonClicked()
+    {
+        if (state == BattleState.ActionSelection)
+        {
+            bool inflictLosePenalty = encounterManager.CurrentEncounter.EncounterData.DifficultyLevel - partyManager.AveragePartyMemberLevel > -3;
+            EndCombat(!inflictLosePenalty, true);
         }
     }
 
@@ -223,6 +250,15 @@ public class BattleManager : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// When the return home button on the win or lose screen is clicked, return to the home scene.
+    /// </summary>
+    public void ReturnHomeButtomClicked()
+    {
+        if (state == BattleState.PlayerWin || state == BattleState.PlayerLose)
+            SceneManager.LoadScene(1);
+    }
+
     // Main logic methods
     /// <summary>
     /// Handle the logic for starting battle.
@@ -235,18 +271,19 @@ public class BattleManager : MonoBehaviour
         SetRound(1);
         partyMemberDiedThisTurn = false;
 
-        // Set encounter info UI
-        encounterInfoUI.SetEncounter(encounterManager.CurrentEncounter);
+        // Set encounter info UI and background
+        encounterInfoUI.SetEncounter(encounterManager.CurrentEncounter.EncounterData);
+        background.sprite = encounterManager.CurrentEncounter.EncounterData.Area.Background;
 
         // setup the player's team based on their party
-        party = partyManager.PartyMembers;
-        foreach (PartyMemberInstance partyMember in party)
+        alivePartyMembers = partyManager.Party.Select(partyMember => partyMember).ToList();
+        foreach (PartyMemberInstance partyMember in alivePartyMembers)
             partyMember.IsPlayerTeam = true;
 
         // start with the first two party members active
-        AddActivePartyMember(party[0]);  // party should always have at least 1 member in it
-        if (party.Count > 1)
-            AddActivePartyMember(party[1]);
+        AddActivePartyMember(alivePartyMembers[0]);  // party should always have at least 1 member in it
+        if (alivePartyMembers.Count > 1)
+            AddActivePartyMember(alivePartyMembers[1]);
         playerTeamUI.SetTeam(playerTeam.ConvertAll(parMem => (CharacterInstance)parMem));
 
         // spawn the first wave of enemies from the current encounter
@@ -256,13 +293,13 @@ public class BattleManager : MonoBehaviour
         foreach (CharacterInstance character in characters)
             character.BattleStart();
 
-        // Apply status effects of encounter modifiers to inactive party members
-        foreach (EncounterModifierData modifier in encounterManager.CurrentEncounter.Modifiers)
+        // apply status effects of encounter modifiers to inactive party members
+        foreach (EncounterModifierData modifier in encounterManager.CurrentEncounter.EncounterData.Modifiers)
         {
             foreach (StatusEffectData effect in modifier.Effects)
             {
-                if (party.Count > 2) party[2].ApplyStatusEffect(new StatusEffectInstance(effect, 99, 0, null, party[2]), false);
-                if (party.Count > 3) party[3].ApplyStatusEffect(new StatusEffectInstance(effect, 99, 0, null, party[3]), false);
+                if (alivePartyMembers.Count > 2) alivePartyMembers[2].ApplyStatusEffect(new StatusEffectInstance(effect, 99, 0, null, alivePartyMembers[2]), false);
+                if (alivePartyMembers.Count > 3) alivePartyMembers[3].ApplyStatusEffect(new StatusEffectInstance(effect, 99, 0, null, alivePartyMembers[3]), false);
             }
         }
 
@@ -292,10 +329,10 @@ public class BattleManager : MonoBehaviour
         {
             state = BattleState.ReplaceDeadPartyMember;
 
-            if (party.Count > 1)
+            if (alivePartyMembers.Count > 1)
             {
                 ShowPartyScreen();
-                partyMemberSelectionUI.SetParty(party, partyMemberDiedThisTurn);
+                partyMemberSelectionUI.SetParty(alivePartyMembers, deadPartyMembers, partyMemberDiedThisTurn);
             } else
             {
                 // there are no inactive party members left, so just go back to ending the round as normal
@@ -362,15 +399,13 @@ public class BattleManager : MonoBehaviour
         // if all enemies have died, spawn the next wave, unless there are no waves left or all active party members or dead, then end combat
         if (CheckDeadCharacters())
         {
-            if (playerTeam.Count > 0 && encounterManager.CurrentEncounter.Waves.Count() > wave)
+            if (playerTeam.Count > 0 && encounterManager.CurrentEncounter.EncounterData.Waves.Count() > wave)
             {
                 SpawnEnemyWave(++wave);
                 StartRound();
             }
-#if UNITY_EDITOR
             else
-                Debug.Log(playerTeam.Count <= 0 ? "Enemies Win!" : "Player Wins!");
-#endif
+                EndCombat(playerTeam.Count > 0, false);
         }
         else
         {
@@ -408,13 +443,56 @@ public class BattleManager : MonoBehaviour
     }
 
     /// <summary>
+    /// Handles ending combat, taking into account if the player won or lost and if the player ran or not.
+    /// </summary>
+    /// <param name="didPlayerWin">Whether or not the player won.</param>
+    /// <param name="ran">Whether or not the player ran from combat.</param>
+    private void EndCombat(bool didPlayerWin, bool ran)
+    {
+        state = didPlayerWin ? BattleState.PlayerWin : BattleState.PlayerLose;
+
+        foreach (PartyMemberInstance partyMember in partyManager.Party)
+            partyMember.BattleEnd();
+
+        if (state == BattleState.PlayerWin && !ran)
+        {
+            ShowWinScreen();
+            
+            // determine rewards and award them
+            List<ItemEntry<ItemData>> rewards = encounterManager.CurrentEncounter.Rewards;
+            foreach (ItemEntry<ItemData> entry in rewards)
+                inventoryManager.AddItemPublic(entry.ItemData, entry.Amount);
+
+            // update UI
+            winScreenUI.SetRewardItems(rewards);
+
+            encounterManager.CurrentEncounter.Clear();
+        } else
+        {
+            ShowLoseScreen();
+            int penaltyAmount = 0;
+
+            if (!didPlayerWin)
+            {
+                // inflict lose penalty and apply it
+                int difference = encounterManager.CurrentEncounter.EncounterData.DifficultyLevel - Mathf.FloorToInt(partyManager.AveragePartyMemberLevel);
+                penaltyAmount = Mathf.Max(difference * 10, 5);
+                inventoryManager.RemoveItemPublic(shellsItemData, penaltyAmount);
+            }
+
+            // update UI
+            loseScreenUI.SetPenaltyAmount(penaltyAmount);
+        }
+    }
+
+    /// <summary>
     /// Handle the logic for an enemy taking its turn.
     /// </summary>
     /// <param name="currentCharacter">The character who's turn it currently is.</param>
     private IEnumerator EnemyTurn(CharacterInstance currentCharacter)
     {
         state = BattleState.EnemyTurn;
-        EnemyInstance enemy = enemyTeam.Where(enemy => enemy.UniqueCharacterId == currentCharacter.UniqueCharacterId).First();
+        EnemyInstance enemy = enemyTeam.Where(enemy => enemy.UniqueCharacterId == currentCharacter.UniqueCharacterId).FirstOrDefault();
 
         // choose what action the enemy will use then perform that action
         EnemyAction chosenAction = DetermineEnemyAction(enemy);
@@ -510,7 +588,37 @@ public class BattleManager : MonoBehaviour
     /// <param name="waveNum">The wave to spawn.</param>
     private void SpawnEnemyWave(int waveNum)
     {
-        foreach (EnemyInstance enemy in encounterManager.CurrentEncounter.Waves[waveNum - 1].Enemies)
+        List<EnemyInstance> enemies = new List<EnemyInstance>();
+        EncounterData encounter = encounterManager.CurrentEncounter.EncounterData;
+
+        switch (encounter.Type)
+        {
+            case EncounterType.Normal or EncounterType.Dungeon:
+                enemies = encounter.Waves[waveNum - 1].Enemies;
+                break;
+            case EncounterType.SingleWild:
+                // spawn one random common enemy
+                enemies.Add(new EnemyInstance(encounter.Area.RandomCommonEnemy, encounter.DifficultyLevel));
+                break;
+            case EncounterType.DoubleWild:
+                // spawn two random common enemies
+                for (int i = 0; i < 2; i++)
+                    enemies.Add(new EnemyInstance(encounter.Area.RandomCommonEnemy, encounter.DifficultyLevel));
+                break;
+            case EncounterType.HardWild:
+                // spawn one random common enemy
+                enemies.Add(new EnemyInstance(encounter.Area.RandomRareEnemy, encounter.DifficultyLevel));
+                break;
+            case EncounterType.HardDoubleWild:
+                // 1 random rare and 1 random common or rare (50% chance to be either or)
+                enemies.Add(new EnemyInstance(encounter.Area.RandomRareEnemy, encounter.DifficultyLevel));
+
+                EnemyData randomEnemyData = Random.Range(0, 2) == 0 ? encounter.Area.RandomCommonEnemy : encounter.Area.RandomRareEnemy;
+                enemies.Add(new EnemyInstance(randomEnemyData, encounter.DifficultyLevel));
+                break;
+        }
+
+        foreach (EnemyInstance enemy in enemies)
             AddEnemy(enemy);
         enemyTeamUI.SetTeam(enemyTeam.ConvertAll(enemy => (CharacterInstance)enemy));
     }
@@ -529,6 +637,8 @@ public class BattleManager : MonoBehaviour
         state = BattleState.PerformMove;
 
         yield return dialogueBox.TypeDialogue($"{user.CharacterData.Name} (lvl {user.Level}) used {move.Name}.");
+
+        move.Effects?.MoveOnUse?.Invoke(user, move, target);
 
         // perform all damage effects of the move
         foreach (MoveDamageEffect effect in move.DamageEffects)
@@ -602,7 +712,7 @@ public class BattleManager : MonoBehaviour
     private CharacterInstance EnemyChooseTarget(EnemyInstance enemy, EnemyAction action, MoveData move)
     {
         // these target options don't rely on the selected target, so just use the user as the target
-        if (move.Target is MoveTarget.User or MoveTarget.UserTeam or MoveTarget.EnemyTeam or MoveTarget.All or MoveTarget.AllOther)
+        if (move.Target is BattleTargettingType.User or BattleTargettingType.UserTeam or BattleTargettingType.EnemyTeam or BattleTargettingType.All or BattleTargettingType.AllOther)
             return enemy;
 
         switch (action)
@@ -641,9 +751,7 @@ public class BattleManager : MonoBehaviour
         foreach (EnemyAction action in actions.Keys)
         {
             if (randNum < actions[action])
-            {
                 return action;
-            }
             randNum -= actions[action];
         }
         return EnemyAction.Attack;  // In case that somehow fails, just default to attacking
@@ -697,13 +805,13 @@ public class BattleManager : MonoBehaviour
     private void Switch(CharacterInstance oldCharacter, CharacterInstance newCharacter)
     {
         // Update party to reflect the switch
-        int currentIndex = party.FindIndex(chr => chr.UniqueCharacterId == oldCharacter.UniqueCharacterId);
-        int newIndex = party.FindIndex(chr => chr.UniqueCharacterId == newCharacter.UniqueCharacterId);
-        (party[currentIndex], party[newIndex]) = (party[newIndex], party[currentIndex]);
+        int currentIndex = alivePartyMembers.FindIndex(chr => chr.UniqueCharacterId == oldCharacter.UniqueCharacterId);
+        int newIndex = alivePartyMembers.FindIndex(chr => chr.UniqueCharacterId == newCharacter.UniqueCharacterId);
+        (alivePartyMembers[currentIndex], alivePartyMembers[newIndex]) = (alivePartyMembers[newIndex], alivePartyMembers[currentIndex]);
 
         // Update playerTeam to reflect the switch
         currentIndex = playerTeam.FindIndex(chr => chr.UniqueCharacterId == oldCharacter.UniqueCharacterId);
-        playerTeam[currentIndex] = party.Find(chr => chr.UniqueCharacterId == newCharacter.UniqueCharacterId);
+        playerTeam[currentIndex] = alivePartyMembers.Find(chr => chr.UniqueCharacterId == newCharacter.UniqueCharacterId);
 
         // Update characters to reflect the switch
         characters[characters.FindIndex(chr => chr.UniqueCharacterId == oldCharacter.UniqueCharacterId)] = newCharacter;
@@ -719,13 +827,13 @@ public class BattleManager : MonoBehaviour
     /// <param name="character">The party member to activate.</param>
     private void ActivatePartyMember(CharacterInstance character)
     {
-        int partyIndex = party.FindIndex(chr => chr.UniqueCharacterId == character.UniqueCharacterId);
-        playerTeam.Add(party[partyIndex]);
+        int partyIndex = alivePartyMembers.FindIndex(chr => chr.UniqueCharacterId == character.UniqueCharacterId);
+        playerTeam.Add(alivePartyMembers[partyIndex]);
 
         // if the third party member was selected, swap it with the second member,
         // since the first two should always be the two that are active
         if (partyIndex > 1)
-            (party[partyIndex], party[1]) = (party[1], party[partyIndex]);
+            (alivePartyMembers[partyIndex], alivePartyMembers[1]) = (alivePartyMembers[1], alivePartyMembers[partyIndex]);
 
         characters.Add(character);
         playerTeamUI.SetTeam(playerTeam.ConvertAll(chr => (CharacterInstance)chr));
@@ -746,45 +854,45 @@ public class BattleManager : MonoBehaviour
     /// <param name="user">The character using the move.</param>
     /// <param name="target">The primary target of that was already determined. Certain target types may not use this.</param>
     /// <returns>The characters that will be targeted.</returns>
-    private List<CharacterInstance> GetEffectTargets(MoveTarget targetType, CharacterInstance user, CharacterInstance target)
+    public List<CharacterInstance> GetEffectTargets(BattleTargettingType targetType, CharacterInstance user, CharacterInstance target)
     {
         List<CharacterInstance> targets = new List<CharacterInstance>();
         switch (targetType)
         {
-            case MoveTarget.SingleOther or MoveTarget.SingleAlly or MoveTarget.SingleEnemy or MoveTarget.SingleAny:
+            case BattleTargettingType.SingleOther or BattleTargettingType.SingleAlly or BattleTargettingType.SingleEnemy or BattleTargettingType.SingleAny:
                 targets.Add(target);
                 break;
-            case MoveTarget.User:
+            case BattleTargettingType.User:
                 targets.Add(user);
                 break;
-            case MoveTarget.UserTeam:
+            case BattleTargettingType.UserTeam:
                 if (user.IsPlayerTeam)
                     targets = playerTeam.ConvertAll(chr => (CharacterInstance)chr);
                 else
                     targets = enemyTeam.ConvertAll(chr => (CharacterInstance)chr);
                 break;
-            case MoveTarget.EnemyTeam:
+            case BattleTargettingType.EnemyTeam:
                 if (user.IsPlayerTeam)
                     targets = enemyTeam.ConvertAll(chr => (CharacterInstance)chr);
                 else
                     targets = playerTeam.ConvertAll(chr => (CharacterInstance)chr);
                 break;
-            case MoveTarget.AnyTeam:
+            case BattleTargettingType.AnyTeam:
                 if (target.IsPlayerTeam)
                     targets = playerTeam.ConvertAll(chr => (CharacterInstance)chr);
                 else
                     targets = enemyTeam.ConvertAll(chr => (CharacterInstance)chr);
                 break;
-            case MoveTarget.OppositeTeam:
+            case BattleTargettingType.OppositeTeam:
                 if (target.IsPlayerTeam)
                     targets = enemyTeam.ConvertAll(chr => (CharacterInstance)chr);
                 else
                     targets = playerTeam.ConvertAll(chr => (CharacterInstance)chr);
                 break;
-            case MoveTarget.AllOther:
+            case BattleTargettingType.AllOther:
                 targets = characters.Where(chr => chr != user).ToList();
                 break;
-            case MoveTarget.All:
+            case BattleTargettingType.All:
                 targets = characters;
                 break;
         }
@@ -836,7 +944,7 @@ public class BattleManager : MonoBehaviour
     private void KillCharacter(CharacterInstance character)
     {
         // check if the character is a party member
-        if (party.Exists(chr => chr.UniqueCharacterId == character.UniqueCharacterId))
+        if (alivePartyMembers.Exists(chr => chr.UniqueCharacterId == character.UniqueCharacterId))
             partyMemberDiedThisTurn = true;
 
         characters.Remove(character);
@@ -848,8 +956,10 @@ public class BattleManager : MonoBehaviour
         if (character.IsPlayerTeam)
         {
             playerTeam.RemoveAll(chr => chr.UniqueCharacterId == character.UniqueCharacterId);
-            party.RemoveAll(chr => chr.UniqueCharacterId == character.UniqueCharacterId);
             playerTeamUI.RemoveCharacter(character);
+
+            deadPartyMembers.Add(alivePartyMembers.Where(partyMember => partyMember.UniqueCharacterId == character.UniqueCharacterId).FirstOrDefault());
+            alivePartyMembers.RemoveAll(chr => chr.UniqueCharacterId == character.UniqueCharacterId);
         }
         else
         {
@@ -860,34 +970,86 @@ public class BattleManager : MonoBehaviour
 
     private void ShowActionSelectionScreen()
     {
-        if (state == BattleState.MoveSelection || state == BattleState.TargetSelection)
-        {
-            moveSelectionUIGO.SetActive(false);
-            moveInfoUIGO.SetActive(false);
-            dialogueBoxGO.SetActive(true);
-            actionSelectionButtons.SetActive(true);
-        }
-        else if (state == BattleState.PartyScreen || state == BattleState.ReplaceDeadPartyMember)
-        {
-            dialogueBoxGO.SetActive(true);
-            actionSelectionButtons.SetActive(true);
-            partyMemberSelectionUIGO.SetActive(false);
-        }
+        SetActionSelectionScreen(true);
+        SetMoveSelectionScreen(false);
+        SetPartyScreen(false);
     }
 
     private void ShowMoveSelectionScreen()
     {
-        dialogueBoxGO.SetActive(false);
-        actionSelectionButtons.SetActive(false);
-        moveSelectionUIGO.SetActive(true);
-        moveInfoUIGO.SetActive(true);
+        SetMoveSelectionScreen(true);
+        SetActionSelectionScreen(false);
+        SetPartyScreen(false);
     }
 
     private void ShowPartyScreen()
     {
-        dialogueBoxGO.SetActive(false);
-        actionSelectionButtons.SetActive(false);
-        partyMemberSelectionUIGO.SetActive(true);
+        SetPartyScreen(true);
+        SetActionSelectionScreen(false);
+        SetMoveSelectionScreen(false);
+    }
+
+    private void ShowWinScreen()
+    {
+        SetWinScreen(true);
+        SetPartyScreen(false);
+        SetActionSelectionScreen(false);
+        SetMoveSelectionScreen(false);
+    }
+
+    private void ShowLoseScreen()
+    {
+        SetLoseScreen(true);
+        SetPartyScreen(false);
+        SetActionSelectionScreen(false);
+        SetMoveSelectionScreen(false);
+    }
+
+    /// <summary>
+    /// Set whether or not the action selection screen game objects are active.
+    /// </summary>
+    /// <param name="isActive">Whether or not the action selection screen game objects are active.</param>
+    private void SetActionSelectionScreen(bool isActive)
+    {
+        dialogueBoxGO.SetActive(isActive);
+        actionSelectionButtons.SetActive(isActive);
+    }
+
+    /// <summary>
+    /// Set whether or not the move selection screen game objects are active.
+    /// </summary>
+    /// <param name="isActive">Whether or not the move selection screen game objects are active.</param>
+    private void SetMoveSelectionScreen(bool isActive)
+    {
+        moveSelectionUIGO.SetActive(isActive);
+        moveInfoUIGO.SetActive(isActive);
+    }
+
+    /// <summary>
+    /// Set whether or not the party screen game objects are active.
+    /// </summary>
+    /// <param name="isActive">Whether or not the party screen game objects are active.</param>
+    private void SetPartyScreen(bool isActive)
+    {
+        partyMemberSelectionUIGO.SetActive(isActive);
+    }
+
+    /// <summary>
+    /// Set whether or not the win screen game objects are active.
+    /// </summary>
+    /// <param name="isActive">Whether or not the win screen game objects are active.</param>
+    private void SetWinScreen(bool isActive)
+    {
+        winScreenUIGO.SetActive(isActive);
+    }
+
+    /// <summary>
+    /// Set whether or not the lose screen game objects are active.
+    /// </summary>
+    /// <param name="isActive">Whether or not the lose screen game objects are active.</param>
+    private void SetLoseScreen(bool isActive)
+    {
+        loseScreenUIGO.SetActive(isActive);
     }
 
     /// <summary>
@@ -900,7 +1062,7 @@ public class BattleManager : MonoBehaviour
         characters.Add(partyMember);
 
         // Apply status effects of encounter modifiers
-        foreach (EncounterModifierData modifier in encounterManager.CurrentEncounter.Modifiers)
+        foreach (EncounterModifierData modifier in encounterManager.CurrentEncounter.EncounterData.Modifiers)
         {
             foreach (StatusEffectData effect in modifier.Effects)
                 partyMember.ApplyStatusEffect(new StatusEffectInstance(effect, 99, 0, null, partyMember), false);
@@ -920,7 +1082,7 @@ public class BattleManager : MonoBehaviour
         characters.Add(enemy);
 
         // Apply status effects of encounter modifiers
-        foreach (EncounterModifierData modifier in encounterManager.CurrentEncounter.Modifiers)
+        foreach (EncounterModifierData modifier in encounterManager.CurrentEncounter.EncounterData.Modifiers)
         {
             foreach (StatusEffectData effect in modifier.Effects)
                 enemy.ApplyStatusEffect(new StatusEffectInstance(effect, 99, 0, null, enemy), false);

@@ -25,7 +25,8 @@ public class AbilityData : ScriptableObject
     {
         get
         {
-            return EffectsDB.AbilityEffects[_id];
+            if (EffectsDB.AbilityEffects.ContainsKey(_id)) return EffectsDB.AbilityEffects[_id];
+            else return null;
         }
     }
 }

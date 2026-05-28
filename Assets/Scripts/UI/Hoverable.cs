@@ -7,13 +7,23 @@ using UnityEngine.UI;
 /// </summary>
 public class Hoverable : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
 {
-    [SerializeField] private Color normalColor;
-    [SerializeField] private Color selectedColor;
-    [SerializeField] private Color hoverColor;
+    [SerializeField, Tooltip("Whether or not hovering this object changes its color.")] private bool hoverColorChange;
+    [SerializeField, Tooltip("Whether or not selecting this object changes its color.")] private bool selectColorChange;
 
     [SerializeField] private bool autoDetermineColors;
     [SerializeField] private float selectedColorMultiplier;
     [SerializeField] private float hoverColorMultiplier;
+
+    [SerializeField] private Color normalColor;
+    [SerializeField] private Color selectedColor;
+    [SerializeField] private Color hoverColor;
+
+    [SerializeField, Tooltip("Whether or not hovering this object changes its sprite.")] private bool hoverSpriteChange;
+    [SerializeField, Tooltip("Whether or not selecting this object changes its sprite.")] private bool selectSpriteChange;
+    [SerializeField] private Sprite normalSprite;
+    [SerializeField] private Sprite selectedSprite;
+    [SerializeField] private Sprite hoverSprite;
+
 
     [SerializeField] private string tooltipName;
     [SerializeField] private float tooltipShowDelay;
@@ -34,7 +44,7 @@ public class Hoverable : MonoBehaviour, IPointerEnterHandler, IPointerExitHandle
 
     private void Start()
     {
-        tooltip = GameObject.Find("Tooltips").transform.Find(tooltipName).gameObject;
+        if (tooltipName != "") tooltip = GameObject.Find("Tooltips").transform.Find(tooltipName).gameObject;
     }
 
     public void OnPointerEnter(PointerEventData eventData)
@@ -58,10 +68,10 @@ public class Hoverable : MonoBehaviour, IPointerEnterHandler, IPointerExitHandle
     public void Select()
     {
         isSelected = true;
-        SetColor(selectedColor);
+        if (selectColorChange) SetColor(selectedColor);
+        if (selectSpriteChange) image.sprite = selectedSprite;
 
-        if (outline != null)
-            outline.enabled = true;
+        if (outline != null) outline.enabled = true;
     }
 
     /// <summary>
@@ -70,10 +80,10 @@ public class Hoverable : MonoBehaviour, IPointerEnterHandler, IPointerExitHandle
     public void Deselect()
     {
         isSelected = false;
-        SetColor(normalColor);
+        if (selectColorChange) SetColor(normalColor);
+        if (selectSpriteChange) image.sprite = normalSprite;
 
-        if (outline != null)
-            outline.enabled = false;
+        if (outline != null) outline.enabled = false;
     }
 
     /// <summary>
@@ -81,7 +91,8 @@ public class Hoverable : MonoBehaviour, IPointerEnterHandler, IPointerExitHandle
     /// </summary>
     public void Hover()
     {
-        SetColor(hoverColor);
+        if (hoverColorChange) SetColor(hoverColor);
+        if (hoverSpriteChange) image.sprite = hoverSprite;
     }
 
     /// <summary>
@@ -89,7 +100,17 @@ public class Hoverable : MonoBehaviour, IPointerEnterHandler, IPointerExitHandle
     /// </summary>
     public void Unhover()
     {
-        SetColor(isSelected ? selectedColor : normalColor);
+        if (hoverColorChange) SetColor(isSelected ? selectedColor : normalColor);
+        if (hoverSpriteChange) image.sprite = isSelected ? selectedSprite : hoverSprite;
+    }
+
+    /// <summary>
+    /// Set whether or not this hoverable should change colors when hovered.
+    /// </summary>
+    /// <param name="changeColorsOnHover">Whether or not this hoverable should change colors when hovered.</param>
+    public void SetHoverColorBehavior(bool changeColorsOnHover)
+    {
+        hoverColorChange = changeColorsOnHover;
     }
 
     /// <summary>
@@ -115,8 +136,8 @@ public class Hoverable : MonoBehaviour, IPointerEnterHandler, IPointerExitHandle
         if (autoDetermineColors)
         {
             normalColor = image.color;
-            selectedColor = image.color * selectedColorMultiplier;
-            hoverColor = image.color * hoverColorMultiplier;
+            selectedColor = new Color(image.color.r * selectedColorMultiplier, image.color.g * selectedColorMultiplier, image.color.b * selectedColorMultiplier);
+            hoverColor = new Color(image.color.r * hoverColorMultiplier, image.color.g * hoverColorMultiplier, image.color.b * hoverColorMultiplier);
         }
     }
 
