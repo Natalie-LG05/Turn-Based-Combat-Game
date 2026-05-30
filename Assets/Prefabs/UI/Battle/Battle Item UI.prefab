@@ -10,7 +10,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 2283836951902635813, guid: 1ff9a8d70e1d106448a2cf5bd6b8f020, type: 3}
       propertyPath: m_Name
-      value: Battle Item UI Variant
+      value: Battle Item UI
       objectReference: {fileID: 0}
     - target: {fileID: 2460920714509231996, guid: 1ff9a8d70e1d106448a2cf5bd6b8f020, type: 3}
       propertyPath: m_fontColor.b
@@ -144,5 +144,40 @@ PrefabInstance:
     - {fileID: 8446083556118628198, guid: 1ff9a8d70e1d106448a2cf5bd6b8f020, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 2283836951902635813, guid: 1ff9a8d70e1d106448a2cf5bd6b8f020, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 8305869766003212077}
   m_SourcePrefab: {fileID: 100100000, guid: 1ff9a8d70e1d106448a2cf5bd6b8f020, type: 3}
+--- !u!1 &371791574707560476 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 2283836951902635813, guid: 1ff9a8d70e1d106448a2cf5bd6b8f020, type: 3}
+  m_PrefabInstance: {fileID: 1916580623380391737}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &8305869766003212077
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 371791574707560476}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9a4ed3f878e04d74b801fa89292067de, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Hoverable
+  hoverColorChange: 1
+  selectColorChange: 0
+  autoDetermineColors: 0
+  selectedColorMultiplier: 0
+  hoverColorMultiplier: 0
+  normalColor: {r: 0, g: 0, b: 0, a: 0}
+  selectedColor: {r: 0, g: 0, b: 0, a: 0}
+  hoverColor: {r: 0, g: 0, b: 0, a: 0.50980395}
+  hoverSpriteChange: 0
+  selectSpriteChange: 0
+  normalSprite: {fileID: 0}
+  selectedSprite: {fileID: 0}
+  hoverSprite: {fileID: 0}
+  tooltipName: 
+  tooltipShowDelay: 0

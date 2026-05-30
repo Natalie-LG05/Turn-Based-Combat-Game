@@ -42,5 +42,8 @@ public class ItemUI : MonoBehaviour, IPointerClickHandler
         // if on the home screen, select that item in the inventory
         if (HomeManager.Instance != null && HomeManager.Instance.State == HomeState.InventoryScreen)
             inventoryUI.ItemOptionClicked(this);
+        // if in combat, select that item on the item selection screen
+        else if (BattleManager.Instance != null && BattleManager.Instance.State == BattleState.ItemSelectionScreen)
+            BattleManager.Instance.ItemOptionClicked((BattleItemData)Item.ItemData);
     }
 }

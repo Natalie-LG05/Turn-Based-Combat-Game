@@ -69,9 +69,9 @@ public class InventoryUI : MonoBehaviour
     }
 
     /// <summary>
-    /// Select an encounter option, deselecting the previously selected option and displaying info about the newly selected option.
+    /// Select an item option, deselecting the previously selected option and displaying info about the newly selected option.
     /// </summary>
-    /// <param name="itemOption">The encounter option to select.</param>
+    /// <param name="itemOption">The item option to select.</param>
     private void SelectItemOption(ItemUI itemOption)
     {
         // Deselect the previously selected item option and select the newly clicked one

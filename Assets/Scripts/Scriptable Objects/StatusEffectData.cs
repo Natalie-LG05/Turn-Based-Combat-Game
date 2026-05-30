@@ -46,13 +46,13 @@ public class StatusEffectStatModifier
 {
     [SerializeField] private Stat _stat;
     [SerializeField] private float _multiplier;
-    [SerializeField] private float _fixedStrength;
     [SerializeField] private bool _isStrengthFixed;
+    [SerializeField] private float _fixedStrength;
 
     public Stat Stat { get => _stat; }
     public float Multiplier { get => _multiplier; set => _multiplier = value; }
-    public float FixedStrength { get => _fixedStrength; }
     public bool IsStrengthFixed { get => _isStrengthFixed; }
+    public float FixedStrength { get => _fixedStrength; }
 
     public StatusEffectStatModifier(Stat stat, float multiplier, float fixedStrength, bool isStrengthFixed)
     {

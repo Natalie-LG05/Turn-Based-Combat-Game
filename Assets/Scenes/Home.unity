@@ -1524,7 +1524,9 @@ MonoBehaviour:
   _statKrillItems:
   - _itemData: {fileID: 11400000, guid: 0893b6ab6e033444a877e39d8afa721f, type: 2}
     _amount: 15
-  _battleItems: []
+  _battleItems:
+  - _itemData: {fileID: 11400000, guid: b97720ac8ea9f294e95a24cca253ca6d, type: 2}
+    _amount: 2
   _weapons: []
   _focuses: []
   _armor: []

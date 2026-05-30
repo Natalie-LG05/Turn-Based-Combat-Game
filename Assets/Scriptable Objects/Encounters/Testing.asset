@@ -23,12 +23,12 @@ MonoBehaviour:
   _waves:
   - _enemies:
     - _characterData: {fileID: 11400000, guid: be46815d091d6b14ba9ce7474fb279c2, type: 2}
-      _level: 1
+      _level: 100
       _isPlayerTeam: 0
-      baseStatPoints: 1253
+      baseStatPoints: 137
       additionalStatPoints: 0
-      _uniqueCharacterId: e2feeb51-d42a-47a1-9aae-cb28ba965c57
-      _enemyData: {fileID: 11400000, guid: f685163ae6b99fe40aec5e781b00f8d4, type: 2}
+      _uniqueCharacterId: 5afd4227-2323-4639-8cdd-6a7c63870876
+      _enemyData: {fileID: 11400000, guid: be46815d091d6b14ba9ce7474fb279c2, type: 2}
   _firstClearRewards:
   - _item: {fileID: 11400000, guid: 389b2afd16b445c4f957df36beb9df27, type: 2}
     _amount: 1
@@ -49,5 +49,3 @@ MonoBehaviour:
     _minAmount: 3
     _maxAmount: 5
     _amountChancePairs: []
-  FirstClearRewards: []
-  SubsequentClearRewards: []

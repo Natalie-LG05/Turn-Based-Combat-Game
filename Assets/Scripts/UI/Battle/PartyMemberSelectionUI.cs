@@ -26,28 +26,29 @@ public class PartyMemberSelectionUI : MonoBehaviour
     /// </summary>
     /// <param name="alivePartyMembers">The current party.</param>
     /// <param name="partyMemberDiedThisTurn">Whether or not a party member died this turn.</param>
-    public void SetParty(List<PartyMemberInstance> alivePartyMembers, List<PartyMemberInstance> deadPartyMembers, bool partyMemberDiedThisTurn)
+    public void SetParty(List<PartyMemberInstance> alivePartyMembers, List<PartyMemberInstance> deadPartyMembers, bool partyMemberDiedThisTurn, bool usingRevive)
     {
         // clear old data
         foreach (GameObject partyMemberUI in partyMemberUIs)
             Destroy(partyMemberUI);
         partyMemberUIs.Clear();
 
-        NewPartyMemberUI(alivePartyMembers[0], true, false);
+        NewPartyMemberUI(alivePartyMembers[0], true, alivePartyMembers[0].CurrentHP <= 0, usingRevive);
         // if a party member died this turn, only the first party member is active, otherwise the first two are active
         if (!partyMemberDiedThisTurn)
         {
-            if (alivePartyMembers.Count > 1) NewPartyMemberUI(alivePartyMembers[1], true, false);
-            if (alivePartyMembers.Count > 2) NewPartyMemberUI(alivePartyMembers[2], false, false);
-            if (alivePartyMembers.Count > 3) NewPartyMemberUI(alivePartyMembers[3], false, false);
+            if (alivePartyMembers.Count > 1) NewPartyMemberUI(alivePartyMembers[1], true, alivePartyMembers[1].CurrentHP <= 0, usingRevive);
+            if (alivePartyMembers.Count > 2) NewPartyMemberUI(alivePartyMembers[2], false, alivePartyMembers[2].CurrentHP <= 0, usingRevive);
+            if (alivePartyMembers.Count > 3) NewPartyMemberUI(alivePartyMembers[3], false, alivePartyMembers[3].CurrentHP <= 0, usingRevive);
         } else
         {
-            if (alivePartyMembers.Count > 1) NewPartyMemberUI(alivePartyMembers[1], false, false);
-            if (alivePartyMembers.Count > 2) NewPartyMemberUI(alivePartyMembers[2], false, false);
+            if (alivePartyMembers.Count > 1) NewPartyMemberUI(alivePartyMembers[1], false, alivePartyMembers[1].CurrentHP <= 0, usingRevive);
+            if (alivePartyMembers.Count > 2) NewPartyMemberUI(alivePartyMembers[2], false, alivePartyMembers[2].CurrentHP <= 0, usingRevive);
+            if (alivePartyMembers.Count > 3) NewPartyMemberUI(alivePartyMembers[3], false, alivePartyMembers[3].CurrentHP <= 0, usingRevive);
         }
 
         foreach (PartyMemberInstance deadPartyMember in deadPartyMembers)
-            NewPartyMemberUI(deadPartyMember, false, true);
+            NewPartyMemberUI(deadPartyMember, false, true, usingRevive);
     }
 
     /// <summary>
@@ -55,7 +56,7 @@ public class PartyMemberSelectionUI : MonoBehaviour
     /// </summary>
     /// <param name="partyMember">The party member to attach to the UI and show info about.</param>
     /// <param name="isActive">Whether or not the provided party member is active.</param>
-    private void NewPartyMemberUI(PartyMemberInstance partyMember, bool isActive, bool isDead)
+    private void NewPartyMemberUI(PartyMemberInstance partyMember, bool isActive, bool isDead, bool usingRevive)
     {
         GameObject partyMemberUIPrefab;
         if (isActive && !isDead) partyMemberUIPrefab = activePartyMemberUIPrefab;
@@ -64,6 +65,7 @@ public class PartyMemberSelectionUI : MonoBehaviour
 
         GameObject partyMemberUI = Instantiate(partyMemberUIPrefab, partyMemberUIContainer);
         partyMemberUIs.Add(partyMemberUI);
-        partyMemberUI.GetComponent<PartyMemberOptionUI>().SetCharacter(partyMember, !isActive && !isDead);
+        if (!usingRevive) partyMemberUI.GetComponent<PartyMemberOptionUI>().SetCharacter(partyMember, !isActive && !isDead);
+        else partyMemberUI.GetComponent<PartyMemberOptionUI>().SetCharacter(partyMember, isDead);
     }
 }

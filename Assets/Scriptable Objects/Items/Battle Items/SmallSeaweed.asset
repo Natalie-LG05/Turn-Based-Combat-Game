@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f03cb2ad593237d4e95e56f70d7dabf6, type: 3}
+  m_Name: SmallSeaweed
+  m_EditorClassIdentifier: Assembly-CSharp::BattleItemData
+  _name: Small Seaweed
+  _id: small_seaweed
+  _description: Heal an ally 10HP.
+  _category: 0
+  _type: 0
+  _iconColor: {r: 0.024756042, g: 0.690566, b: 0.13412987, a: 1}
+  _usesTurn: 1
+  _target: 1
+  _healEffects:
+  - _targets: 1
+    _healAmount: 10
+    _isPercentageHeal: 0
+  _itemStatusEffects: []
+  _reviveEffects: []
+  _customEffects: []

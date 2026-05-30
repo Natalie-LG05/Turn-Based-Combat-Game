@@ -223,13 +223,13 @@ public class CharacterInstance
         // attempt to apply each status effect
         foreach (StatusEffectData status in effect.StatusEffects)
         {
-            bool wasApplied = ApplyStatusEffect(new StatusEffectInstance(status, duration, power, user, this), true);
+            StatusEffectInstance statusEffectInstance = new StatusEffectInstance(status, duration, power, user, this);
+            bool wasApplied = ApplyStatusEffect(statusEffectInstance, true);
 
             if (wasApplied)
             {
                 // if the status was applied, show dialogue that depends on if it was a debuff or not
-                string message = status.Type == StatusEffectType.Debuff ? $"{CharacterData.Name} (lvl {Level}) was inflicted with {status.Name}." : $"{CharacterData.Name} (lvl {Level}) gained {status.Name}.";
-                BattleManager.Instance.QueueMessage(message);
+                BattleManager.Instance.QueueStatusMessage(this, statusEffectInstance);
             }
         }
     }
@@ -247,6 +247,32 @@ public class CharacterInstance
 
         // the calculated power is either the flat amount to heal, or percentage to heal depending on if the effect is a percentage heal or not
         int healAmount = effect.IsPercentageHeal ? Mathf.FloorToInt((power / 100f) * MaxHP + 0.5f) : Mathf.FloorToInt(power + 0.5f);
+        Heal(healAmount);
+    }
+
+    /// <summary>
+    /// Handle being targeted by a heal effect of an item.
+    /// </summary>
+    /// <param name="user">The character that used the item.</param>
+    /// <param name="item">The item that was used.</param>
+    /// <param name="effect">The item heal effect causing the healing.</param>
+    public void ApplyItemHeal(CharacterInstance user, BattleItemData item, BattleItemHealEffect effect)
+    {
+        // determine the amount of health to heal based on if it is a flat amount or percentage heal effect
+        int healAmount = effect.IsPercentageHeal ? Mathf.FloorToInt((effect.HealAmount / 100f) * MaxHP + 0.5f) : Mathf.FloorToInt(effect.HealAmount + 0.5f);
+        Heal(healAmount);
+    }
+
+    /// <summary>
+    /// Handle being targeted by a heal effect of an item.
+    /// </summary>
+    /// <param name="user">The character that used the item.</param>
+    /// <param name="item">The item that was used.</param>
+    /// <param name="effect">The item heal effect causing the healing.</param>
+    public void ApplyItemHeal(CharacterInstance user, BattleItemData item, BattleItemReviveEffect effect)
+    {
+        // determine the amount of health to heal based on if it is a flat amount or percentage heal effect
+        int healAmount = effect.IsPercentageHeal ? Mathf.FloorToInt((effect.HealAmount / 100f) * MaxHP + 0.5f) : Mathf.FloorToInt(effect.HealAmount + 0.5f);
         Heal(healAmount);
     }
 

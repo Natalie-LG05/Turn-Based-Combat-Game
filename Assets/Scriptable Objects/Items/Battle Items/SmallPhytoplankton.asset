@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f03cb2ad593237d4e95e56f70d7dabf6, type: 3}
+  m_Name: SmallPhytoplankton
+  m_EditorClassIdentifier: Assembly-CSharp::BattleItemData
+  _name: Small Phytoplankton
+  _id: small_phytoplankton
+  _description: Revives a party member at 15% of their max HP.
+  _category: 0
+  _type: 0
+  _iconColor: {r: 0.57152665, g: 1, b: 0.3226415, a: 1}
+  _usesTurn: 1
+  _target: 11
+  _healEffects: []
+  _itemStatusEffects: []
+  _reviveEffects:
+  - _targets: 11
+    _healAmount: 15
+    _isPercentageHeal: 1
+  _customEffects: []

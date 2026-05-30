@@ -4,9 +4,10 @@ using System.Linq;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
+using UnityEngine.TextCore.Text;
 using UnityEngine.UI;
 
-public enum BattleState { Setup, ActionSelection, MoveSelection, MoveTargetSelection, PartyScreen, ReplaceDeadPartyMember, ItemTargetSelection, EnemyTurn, PerformMove, RoundEnd, Busy, PlayerWin, PlayerLose }
+public enum BattleState { Setup, ActionSelection, MoveSelection, MoveTargetSelection, SwitchingPartyMembers, ReplaceDeadPartyMember, ItemSelectionScreen, ItemTargetSelection, EnemyTurn, PerformMove, UseItem, RoundEnd, Busy, PlayerWin, PlayerLose }
 
 /// <summary>
 /// Manages battle, containing the main gameplay loop during combat and handling much of the logic.
@@ -17,7 +18,7 @@ public class BattleManager : MonoBehaviour
     private int round;
 
     public static BattleManager Instance { get; private set; }
-    private BattleState state;
+    public BattleState State { get; set; }
     /// <summary>Gets the character who's turn it currently is.</summary>
     public CharacterInstance CurrentCharacter { get { return turnQueue.Peek(); } }
 
@@ -54,6 +55,12 @@ public class BattleManager : MonoBehaviour
     [SerializeField] private GameObject partyMemberSelectionUIGO;
     private PartyMemberSelectionUI partyMemberSelectionUI;
 
+    [SerializeField] private GameObject effectInfoTooltip;
+
+    [SerializeField] private GameObject itemSelectionUIGO;
+    [SerializeField] private GameObject itemInfoUIGO;
+    private ItemSelectionUI itemSelectionUI;
+
     [SerializeField] private GameObject winScreenUIGO;
     private WinScreenUI winScreenUI;
 
@@ -62,6 +69,7 @@ public class BattleManager : MonoBehaviour
     [SerializeField] private ItemData shellsItemData;
 
     private MoveData selectedMove;
+    private BattleItemData selectedItem;
     private bool partyMemberDiedThisTurn;
 
     // Unity game object methods
@@ -78,6 +86,7 @@ public class BattleManager : MonoBehaviour
         dialogueBox = dialogueBoxGO.GetComponent<BattleDialogueBox>();
         moveSelectionUI = moveSelectionUIGO.GetComponent<MoveSelectionUI>();
         partyMemberSelectionUI = partyMemberSelectionUIGO.GetComponent<PartyMemberSelectionUI>();
+        itemSelectionUI = itemSelectionUIGO.GetComponent<ItemSelectionUI>();
         winScreenUI = winScreenUIGO.GetComponent<WinScreenUI>();
         loseScreenUI = loseScreenUIGO.GetComponent<LoseScreenUI>();
 
@@ -97,22 +106,30 @@ public class BattleManager : MonoBehaviour
 
     private void Update()
     {
-        switch (state)
+        switch (State)
         {
             case BattleState.MoveTargetSelection:
                 // pressing escape cancels the move selection that was made and returns to the move selection screen
                 if (Keyboard.current.escapeKey.wasPressedThisFrame)
                 {
                     ShowMoveSelectionScreen();
-                    state = BattleState.MoveSelection;
+                    State = BattleState.MoveSelection;
                 }
                 break;
-            case BattleState.MoveSelection or BattleState.PartyScreen:
+            case BattleState.ItemTargetSelection:
+                // pressing escape cancels the item selection that was made and returns to the item selection screen
+                if (Keyboard.current.escapeKey.wasPressedThisFrame)
+                {
+                    ShowItemSelectionScreen();
+                    State = BattleState.ItemSelectionScreen;
+                }
+                break;
+            case BattleState.MoveSelection or BattleState.SwitchingPartyMembers or BattleState.ItemSelectionScreen:
                 // pressing escape is the same as clicking the back button
                 if (Keyboard.current.escapeKey.wasPressedThisFrame)
                 {
                     BackButtonClicked();
-                    state = BattleState.ActionSelection;
+                    State = BattleState.ActionSelection;
                 }
                 break;
         }
@@ -128,15 +145,28 @@ public class BattleManager : MonoBehaviour
         dialogueQueue.Enqueue(message);
     }
 
+    /// <summary>
+    /// Add a status effect message to the dialogue queue.
+    /// </summary>
+    /// <param name="targetCharacter">The character that gained the status effect.</param>
+    /// <param name="status">The status effect that was gained.</param>
+    public void QueueStatusMessage(CharacterInstance targetCharacter, StatusEffectInstance status)
+    {
+        string message = $"{targetCharacter.CharacterData.Name} (lvl {targetCharacter.Level}) ";
+        message += status.StatusEffectData.Type == StatusEffectType.Debuff ? "was inflicted with" : "gained";
+        message += $" {status.StatusEffectData.Name} for {status.Duration} turns.";
+        QueueMessage(message);
+    }
+
     // public methods for buttons to call
     /// <summary>
     /// When the move button is clicked during action selection, change to move selection and show the move selection screen.
     /// </summary>
     public void MoveButtonClicked()
     {
-        if (state == BattleState.ActionSelection)
+        if (State == BattleState.ActionSelection)
         {
-            state = BattleState.MoveSelection;
+            State = BattleState.MoveSelection;
 
             // show the move selection screen and update the UI
             ShowMoveSelectionScreen();
@@ -152,7 +182,7 @@ public class BattleManager : MonoBehaviour
     /// <param name="move">The move that was selected.</param>
     public void MoveOptionClicked(MoveData move)
     {
-        if (state == BattleState.MoveSelection)
+        if (State == BattleState.MoveSelection)
         {
             // these target options don't rely on the selected target, so simply use the move
             // with the user as the target, otherwise the player needs to select a target
@@ -160,7 +190,7 @@ public class BattleManager : MonoBehaviour
                 StartCoroutine(PlayerMove(move, CurrentCharacter));
             else
             {
-                state = BattleState.MoveTargetSelection;
+                State = BattleState.MoveTargetSelection;
 
                 selectedMove = move;
                 ShowActionSelectionScreen();
@@ -175,7 +205,7 @@ public class BattleManager : MonoBehaviour
     /// <param name="target"></param>
     public void TargetOptionClicked(CharacterInstance target)
     {
-        if (state == BattleState.MoveTargetSelection)
+        if (State == BattleState.MoveTargetSelection)
         {
             List<CharacterInstance> validTargets = new List<CharacterInstance>();
             if (selectedMove.Target == BattleTargettingType.SingleOther)
@@ -190,6 +220,21 @@ public class BattleManager : MonoBehaviour
             if (validTargets.Contains(target))
                 StartCoroutine(PlayerMove(selectedMove, target));
         }
+        else if (State == BattleState.ItemTargetSelection)
+        {
+            List<CharacterInstance> validTargets = new List<CharacterInstance>();
+            if (selectedItem.Target == BattleTargettingType.SingleOther)
+                validTargets = characters.Where(chr => chr != CurrentCharacter).ToList();
+            else if (selectedItem.Target == BattleTargettingType.SingleEnemy)
+                validTargets = enemyTeam.ConvertAll(chr => (CharacterInstance)chr);
+            else if (selectedItem.Target == BattleTargettingType.SingleAlly)
+                validTargets = playerTeam.ConvertAll(chr => (CharacterInstance)chr);
+            else if (selectedItem.Target == BattleTargettingType.SingleAny || selectedMove.Target == BattleTargettingType.AnyTeam || selectedMove.Target == BattleTargettingType.OppositeTeam)
+                validTargets = characters;
+
+            if (validTargets.Contains(target))
+                StartCoroutine(PlayerItem(selectedItem, target));
+        }
     }
 
     /// <summary>
@@ -197,22 +242,13 @@ public class BattleManager : MonoBehaviour
     /// </summary>
     public void SwitchButtonClicked()
     {
-        if (state == BattleState.ActionSelection)
+        if (State == BattleState.ActionSelection)
         {
-            state = BattleState.PartyScreen;
+            State = BattleState.SwitchingPartyMembers;
 
             // show the party screen and update the UI
             ShowPartyScreen();
-            partyMemberSelectionUI.SetParty(alivePartyMembers, deadPartyMembers, partyMemberDiedThisTurn);
-        }
-    }
-
-    public void RunButtonClicked()
-    {
-        if (state == BattleState.ActionSelection)
-        {
-            bool inflictLosePenalty = encounterManager.CurrentEncounter.EncounterData.DifficultyLevel - partyManager.AveragePartyMemberLevel > -3;
-            EndCombat(!inflictLosePenalty, true);
+            partyMemberSelectionUI.SetParty(alivePartyMembers, deadPartyMembers, partyMemberDiedThisTurn, false);
         }
     }
 
@@ -223,17 +259,102 @@ public class BattleManager : MonoBehaviour
     /// <param name="character"></param>
     public void PartyMemberOptionClicked(CharacterInstance character)
     {
-        if (state == BattleState.PartyScreen)
+        if (State == BattleState.SwitchingPartyMembers)
         {
+            effectInfoTooltip.SetActive(false);  // here to fix a bug of the tooltip getting stuck on screen
+
             StartCoroutine(PlayerSwitch(CurrentCharacter, character));
-        } else if (state == BattleState.ReplaceDeadPartyMember)
+        }
+        else if (State == BattleState.ReplaceDeadPartyMember)
         {
+            effectInfoTooltip.SetActive(false);  // here to fix a bug of the tooltip getting stuck on screen
+
             ActivatePartyMember(character);
             ShowActionSelectionScreen();
 
             // signal that the dead party member has been handled and return to ending the round
             partyMemberDiedThisTurn = false;
             EndRound();
+        }
+        else if (State == BattleState.ItemTargetSelection)
+        {
+            effectInfoTooltip.SetActive(false);  // here to fix a bug of the tooltip getting stuck on screen
+
+            PartyMemberInstance partyMember = (PartyMemberInstance)character;
+
+            // set valid targets to dead party members
+            List<PartyMemberInstance> validTargets = deadPartyMembers;
+            if (validTargets.Contains(partyMember))
+                StartCoroutine(PlayerItem(selectedItem, partyMember));
+        }
+    }
+
+    /// <summary>
+    /// When the run button is clicked, determine if a lose penalty should be inflicted and then end combat, showing the lose screen.
+    /// </summary>
+    public void RunButtonClicked()
+    {
+        if (State == BattleState.ActionSelection)
+        {
+            bool inflictLosePenalty = encounterManager.CurrentEncounter.EncounterData.DifficultyLevel - partyManager.AveragePartyMemberLevel > -3;
+            EndCombat(!inflictLosePenalty, true);
+        }
+    }
+
+    public void ItemButtonClicked()
+    {
+        if (State == BattleState.ActionSelection)
+        {
+            StartCoroutine(EnterItemSelection());
+        }
+    }
+
+    private IEnumerator EnterItemSelection()
+    {
+        // if the player has battle items, enter item selection
+        if (inventoryManager.BattleItems.Count <= 0)
+        {
+            yield return dialogueBox.TypeDialogue("You do not have any battle items to use!");
+            dialogueBox.SetDialogue($"It is {CurrentCharacter.CharacterData.Name}'s turn, choose an action.");
+        } else
+        {
+            State = BattleState.ItemSelectionScreen;
+
+            ShowItemSelectionScreen();
+            itemSelectionUI.UpdateItemOptions();
+        }
+    }
+
+    /// <summary>
+    /// When an item option is clicked during item selection, 
+    /// <br/>either use that item if it requires no target selection 
+    /// <br/>or change to target selection and show the action selection screen and some dialogue. 
+    /// </summary>
+    /// <param name="item"></param>
+    public void ItemOptionClicked(BattleItemData item)
+    {
+        if (State == BattleState.ItemSelectionScreen)
+        {
+            // these target options don't rely on the selected target, so simply use the item
+            // with the user as the target, otherwise the player needs to select a target
+            if (item.Target is BattleTargettingType.User or BattleTargettingType.UserTeam or BattleTargettingType.EnemyTeam or BattleTargettingType.All or BattleTargettingType.AllOther)
+                StartCoroutine(PlayerItem(item, CurrentCharacter));
+            else if (item.Target == BattleTargettingType.PartyMember)
+            {
+                State = BattleState.ItemTargetSelection;
+                selectedItem = item;
+
+                ShowPartyScreen();
+                partyMemberSelectionUI.SetParty(alivePartyMembers, deadPartyMembers, partyMemberDiedThisTurn, true);
+            }
+            else
+            {
+                State = BattleState.ItemTargetSelection;
+                selectedItem = item;
+
+                ShowActionSelectionScreen();
+                dialogueBox.SetDialogue("Select a target character (AOE items will target that entire team). Press escape to cancel.");
+            }
         }
     }
 
@@ -242,10 +363,10 @@ public class BattleManager : MonoBehaviour
     /// </summary>
     public void BackButtonClicked()
     {
-        if (state == BattleState.MoveSelection || state == BattleState.PartyScreen)
+        if (State == BattleState.MoveSelection || State == BattleState.SwitchingPartyMembers || State == BattleState.ItemSelectionScreen || State == BattleState.ItemTargetSelection)
         {
             ShowActionSelectionScreen();
-            state = BattleState.ActionSelection;
+            State = BattleState.ActionSelection;
             dialogueBox.SetDialogue($"It is {CurrentCharacter.CharacterData.Name}'s turn, choose an action.");
         }
     }
@@ -255,7 +376,7 @@ public class BattleManager : MonoBehaviour
     /// </summary>
     public void ReturnHomeButtomClicked()
     {
-        if (state == BattleState.PlayerWin || state == BattleState.PlayerLose)
+        if (State == BattleState.PlayerWin || State == BattleState.PlayerLose)
             SceneManager.LoadScene(1);
     }
 
@@ -265,7 +386,7 @@ public class BattleManager : MonoBehaviour
     /// </summary>
     private void SetupBattle()
     {
-        state = BattleState.Setup;
+        State = BattleState.Setup;
 
         wave = 1;
         SetRound(1);
@@ -327,12 +448,12 @@ public class BattleManager : MonoBehaviour
         // if a party member died this round, show the party screen for the player to choose another (if there are any) to replace it
         if (partyMemberDiedThisTurn)
         {
-            state = BattleState.ReplaceDeadPartyMember;
+            State = BattleState.ReplaceDeadPartyMember;
 
             if (alivePartyMembers.Count > 1)
             {
                 ShowPartyScreen();
-                partyMemberSelectionUI.SetParty(alivePartyMembers, deadPartyMembers, partyMemberDiedThisTurn);
+                partyMemberSelectionUI.SetParty(alivePartyMembers, deadPartyMembers, partyMemberDiedThisTurn, false);
             } else
             {
                 // there are no inactive party members left, so just go back to ending the round as normal
@@ -341,7 +462,7 @@ public class BattleManager : MonoBehaviour
             }
         } else
         {
-            state = BattleState.RoundEnd;
+            State = BattleState.RoundEnd;
 
             // signal to each character that a round has ended
             foreach (CharacterInstance character in characters)
@@ -370,7 +491,7 @@ public class BattleManager : MonoBehaviour
             // for party members enter action selection, for enemies use a move based on their algorithm
             if (CurrentCharacter.IsPlayerTeam)
             {
-                state = BattleState.ActionSelection;
+                State = BattleState.ActionSelection;
                 dialogueBox.SetDialogue($"It is {CurrentCharacter.CharacterData.Name}'s turn, choose an action.");
             } else
             {
@@ -427,6 +548,61 @@ public class BattleManager : MonoBehaviour
     }
 
     /// <summary>
+    /// Handle the logic for when the player uses an item.
+    /// </summary>
+    /// <param name="item">The item to be used.</param>
+    /// <param name="target">The primary target of the item.</param>
+    /// <returns></returns>
+    private IEnumerator PlayerItem(BattleItemData item, CharacterInstance target)
+    {
+        ShowActionSelectionScreen();
+        State = BattleState.UseItem;
+
+        // resolve the item's effects, displaying dialogue as this is done
+        yield return dialogueBox.TypeDialogue($"{CurrentCharacter.CharacterData.Name} used {item.Name}.");
+
+        item.Effects?.ItemOnUse?.Invoke(CurrentCharacter, item, new List<CharacterInstance>() { target });
+        inventoryManager.RemoveItemPublic(item, 1);
+
+        // perform all heal effects of the item
+        foreach (BattleItemHealEffect healEffect in item.HealEffects)
+        {
+            foreach (CharacterInstance character in GetEffectTargets(healEffect.Targets, CurrentCharacter, target))
+            {
+                character.ApplyItemHeal(CurrentCharacter, item, healEffect);   
+                if (character.CharacterUI != null) yield return UpdateHealthbarSmooth(character);
+            }
+        }
+
+        // perform all status effects of the item
+        foreach (BattleItemStatusEffect itemEffect in item.ItemStatusEffects)
+        {
+            foreach (CharacterInstance character in GetEffectTargets(itemEffect.Targets, CurrentCharacter, target))
+            {
+                foreach (StatusEffectData statusData in itemEffect.StatusEffects)
+                {
+                    StatusEffectInstance statusEffectInstance = new StatusEffectInstance(statusData, itemEffect.Duration, itemEffect.Power, CurrentCharacter, character);
+                    character.ApplyStatusEffect(statusEffectInstance, true);
+                    QueueStatusMessage(character, statusEffectInstance);
+                }
+            }
+        }
+        yield return ShowQueuedDialogue();
+
+        // perform all revive effects of the move
+        foreach (BattleItemReviveEffect reviveEffect in item.ReviveEffects)
+        {
+            PartyMemberInstance partyMember = (PartyMemberInstance)target;
+            partyMember.ApplyItemHeal(CurrentCharacter, item, reviveEffect);
+            deadPartyMembers.Remove(partyMember);
+            alivePartyMembers.Add(partyMember);
+        }
+
+        if (item.UsesTurn) EndTurn();
+        else State = BattleState.ActionSelection;
+    }
+
+    /// <summary>
     /// Handle the logic for when the player does the switch action.
     /// </summary>
     /// <param name="oldCharacter">The character being swapped out.</param>
@@ -449,12 +625,12 @@ public class BattleManager : MonoBehaviour
     /// <param name="ran">Whether or not the player ran from combat.</param>
     private void EndCombat(bool didPlayerWin, bool ran)
     {
-        state = didPlayerWin ? BattleState.PlayerWin : BattleState.PlayerLose;
+        State = didPlayerWin ? BattleState.PlayerWin : BattleState.PlayerLose;
 
         foreach (PartyMemberInstance partyMember in partyManager.Party)
             partyMember.BattleEnd();
 
-        if (state == BattleState.PlayerWin && !ran)
+        if (State == BattleState.PlayerWin && !ran)
         {
             ShowWinScreen();
             
@@ -491,7 +667,7 @@ public class BattleManager : MonoBehaviour
     /// <param name="currentCharacter">The character who's turn it currently is.</param>
     private IEnumerator EnemyTurn(CharacterInstance currentCharacter)
     {
-        state = BattleState.EnemyTurn;
+        State = BattleState.EnemyTurn;
         EnemyInstance enemy = enemyTeam.Where(enemy => enemy.UniqueCharacterId == currentCharacter.UniqueCharacterId).FirstOrDefault();
 
         // choose what action the enemy will use then perform that action
@@ -633,8 +809,8 @@ public class BattleManager : MonoBehaviour
     /// <returns></returns>
     private IEnumerator UseMove(CharacterInstance user, CharacterInstance target, MoveData move)
     {
-        BattleState prevState = state;
-        state = BattleState.PerformMove;
+        BattleState prevState = State;
+        State = BattleState.PerformMove;
 
         yield return dialogueBox.TypeDialogue($"{user.CharacterData.Name} (lvl {user.Level}) used {move.Name}.");
 
@@ -694,7 +870,7 @@ public class BattleManager : MonoBehaviour
             }
         }
 
-        state = prevState;
+        State = prevState;
     }
 
     // Helper methods
@@ -830,7 +1006,7 @@ public class BattleManager : MonoBehaviour
         int partyIndex = alivePartyMembers.FindIndex(chr => chr.UniqueCharacterId == character.UniqueCharacterId);
         playerTeam.Add(alivePartyMembers[partyIndex]);
 
-        // if the third party member was selected, swap it with the second member,
+        // if the third or fourth party member was selected, swap it with the second member,
         // since the first two should always be the two that are active
         if (partyIndex > 1)
             (alivePartyMembers[partyIndex], alivePartyMembers[1]) = (alivePartyMembers[1], alivePartyMembers[partyIndex]);
@@ -973,6 +1149,7 @@ public class BattleManager : MonoBehaviour
         SetActionSelectionScreen(true);
         SetMoveSelectionScreen(false);
         SetPartyScreen(false);
+        SetItemSelectionScreen(false);
     }
 
     private void ShowMoveSelectionScreen()
@@ -980,6 +1157,7 @@ public class BattleManager : MonoBehaviour
         SetMoveSelectionScreen(true);
         SetActionSelectionScreen(false);
         SetPartyScreen(false);
+        SetItemSelectionScreen(false);
     }
 
     private void ShowPartyScreen()
@@ -987,6 +1165,15 @@ public class BattleManager : MonoBehaviour
         SetPartyScreen(true);
         SetActionSelectionScreen(false);
         SetMoveSelectionScreen(false);
+        SetItemSelectionScreen(false);
+    }
+
+    private void ShowItemSelectionScreen()
+    {
+        SetItemSelectionScreen(true);
+        SetActionSelectionScreen(false);
+        SetMoveSelectionScreen(false);
+        SetPartyScreen(false);
     }
 
     private void ShowWinScreen()
@@ -1032,6 +1219,16 @@ public class BattleManager : MonoBehaviour
     private void SetPartyScreen(bool isActive)
     {
         partyMemberSelectionUIGO.SetActive(isActive);
+    }
+
+    /// <summary>
+    /// Set whether or not the item selection screen game objects are active.
+    /// </summary>
+    /// <param name="isActive">Whether or not the item selection screen game objects are active.</param>
+    private void SetItemSelectionScreen(bool isActive)
+    {
+        itemSelectionUIGO.SetActive(isActive);
+        itemInfoUIGO.SetActive(isActive);
     }
 
     /// <summary>

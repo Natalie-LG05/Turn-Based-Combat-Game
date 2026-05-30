@@ -4,7 +4,7 @@ using UnityEngine;
 /// <summary>
 /// A scriptable object that contains the data for an equipable item.
 /// </summary>
-[CreateAssetMenu(fileName = "NewEquipmentData", menuName = "ScriptableObjects/Equipment Data", order = -1000)]
+[CreateAssetMenu(fileName = "NewEquipmentData", menuName = "ScriptableObjects/Items/Equipment Data", order = -1000)]
 public class EquipmentData : ItemData
 {
     [SerializeField] private EquipmentStats _stats;

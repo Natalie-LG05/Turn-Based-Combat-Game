@@ -3,7 +3,7 @@ using UnityEngine;
 /// <summary>
 /// A scriptable object that contains the data for an item.
 /// </summary>
-[CreateAssetMenu(fileName = "NewItemData", menuName = "ScriptableObjects/Item Data", order = -1000)]
+[CreateAssetMenu(fileName = "NewItemData", menuName = "ScriptableObjects/Items/Item Data", order = -1000)]
 public class ItemData : ScriptableObject
 {
     [SerializeField] protected string _name;

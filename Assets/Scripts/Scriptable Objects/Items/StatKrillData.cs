@@ -4,7 +4,7 @@ using UnityEngine;
 /// <summary>
 /// A scriptable object that contains the data for a stat krill.
 /// </summary>
-[CreateAssetMenu(fileName = "NewStatKrillData", menuName = "ScriptableObjects/Stat Krill Data", order = -1000)]
+[CreateAssetMenu(fileName = "NewStatKrillData", menuName = "ScriptableObjects/Items/Stat Krill Data", order = -1000)]
 public class StatKrillData : ConsumableItemData
 {
     [SerializeField] private int _amountGained;

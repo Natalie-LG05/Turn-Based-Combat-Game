@@ -4,7 +4,7 @@ using UnityEngine;
 /// <summary>
 /// A scriptable object that contains the data for a consumable item.
 /// </summary>
-[CreateAssetMenu(fileName = "NewConsumableItemData", menuName = "ScriptableObjects/Consumable Item Data", order = -1000)]
+[CreateAssetMenu(fileName = "NewConsumableItemData", menuName = "ScriptableObjects/Items/Consumable Item Data", order = -1000)]
 public class ConsumableItemData : ItemData
 {
     [SerializeField] private int _numberOfTargets;

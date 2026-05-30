@@ -4,13 +4,19 @@ using UnityEngine;
 /// <summary>
 /// A scriptable object that contains the data for a battle item.
 /// </summary>
-[CreateAssetMenu(fileName = "NewBattleItemData", menuName = "ScriptableObjects/Battle Item Data", order = -1000)]
+[CreateAssetMenu(fileName = "NewBattleItemData", menuName = "ScriptableObjects/Items/Battle Item Data", order = -1000)]
 public class BattleItemData : ItemData
 {
+    [SerializeField] private bool _usesTurn;
+    [SerializeField] private BattleTargettingType _target;
+
     [SerializeField] private List<BattleItemHealEffect> _healEffects;
     [SerializeField] private List<BattleItemStatusEffect> _itemStatusEffects;
     [SerializeField] private List<BattleItemReviveEffect> _reviveEffects;
     [SerializeField] private List<BattleItemCustomEffect> _customEffects;
+
+    public bool UsesTurn { get => _usesTurn; }
+    public BattleTargettingType Target { get => _target; }
 
     public List<BattleItemHealEffect> HealEffects { get => _healEffects; }
     public List<BattleItemStatusEffect> ItemStatusEffects { get => _itemStatusEffects; }
@@ -24,7 +30,7 @@ public class BattleItemData : ItemData
 [System.Serializable]
 public class BattleItemEffect
 {
-    protected BattleTargettingType _targets;
+    [SerializeField] protected BattleTargettingType _targets;
     protected bool _doesUseUpTurn;
 
     public BattleTargettingType Targets { get => _targets; }
@@ -51,10 +57,12 @@ public class BattleItemHealEffect : BattleItemEffect
 public class BattleItemStatusEffect : BattleItemEffect
 {
     [SerializeField, Min(1)] private int _duration;
+    [SerializeField] private float _power;
     [SerializeField] private List<StatusEffectData> _statusEffects;
 
     public int Duration { get => _duration; }
-    public List<StatusEffectData> StatusEffect { get => _statusEffects; }
+    public float Power { get => _power; }
+    public List<StatusEffectData> StatusEffects { get => _statusEffects; }
 }
 
 /// <summary>

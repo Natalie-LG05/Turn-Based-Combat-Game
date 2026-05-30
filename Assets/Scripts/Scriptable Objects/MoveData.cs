@@ -172,7 +172,7 @@ public enum MoveElement { Normal, Poison, Twilight, Abyss, Sand }
 
 public enum MoveCategory { Attack, BuffUser, BuffAlly, DebuffEnemy, DebuffUser, DamageUser, DebuffAlly, DamageAlly, BuffEnemy, HealEnemy, HealUser, HealAlly }
 
-public enum BattleTargettingType { SingleOther, SingleAlly, SingleEnemy, SingleAny, User, UserTeam, EnemyTeam, AnyTeam, OppositeTeam, AllOther, All }
+public enum BattleTargettingType { SingleOther, SingleAlly, SingleEnemy, SingleAny, User, UserTeam, EnemyTeam, AnyTeam, OppositeTeam, AllOther, All, PartyMember }
 
 /// <summary>
 /// A base class that represents an effect of a move.
