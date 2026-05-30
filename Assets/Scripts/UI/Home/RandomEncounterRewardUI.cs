@@ -20,9 +20,10 @@ public class RandomEncounterRewardUI : MonoBehaviour
             _reward = value;
 
             nameText.text = _reward.Item.Name;
+
             amountText.text = _reward.RandomizationType ==
                 RandomizationType.Range ? $"{_reward.MinAmount}-{_reward.MaxAmount}" :
-                string.Join("\n", _reward.AmountChancePairs.Select(acp => $"{acp.Amount} : {(acp.Weight / _reward.TotalWeight) * 100}%")).Trim();
+                string.Join("\n", _reward.AmountChancePairs.Select(acp => $"{acp.Amount} : {(acp.Weight / (float)_reward.TotalWeight) * 100}%")).Trim();
 
             icon.color = _reward.Item.IconColor;
         }

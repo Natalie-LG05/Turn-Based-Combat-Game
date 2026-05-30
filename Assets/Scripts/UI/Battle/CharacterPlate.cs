@@ -11,10 +11,7 @@ public class CharacterPlate : MonoBehaviour, IPointerClickHandler
 
     public void OnPointerClick(PointerEventData eventData)
     {
-        BattleManager.Instance.TargetOptionClicked(Character);
-
-#if UNITY_EDITOR
-        Debug.Log($"{Character.CharacterData.Name} (lvl {Character.Level}) has\nMaxHP: {Character.MaxHP}\nAttack: {Character.Attack}\nSupport: {Character.Support}\nDefense: {Character.Defense}\nSpeed: {Character.Speed}");
-#endif
+        if (eventData.button == PointerEventData.InputButton.Left) BattleManager.Instance.TargetOptionClicked(Character);
+        else if (eventData.button == PointerEventData.InputButton.Right) BattleManager.Instance.CharacterPlateRightClicked(Character);
     }
 }

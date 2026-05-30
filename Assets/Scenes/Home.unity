@@ -1515,18 +1515,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ee4b5b9e5de2bed4c9b3b5230c43f3a8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: '::'
-  _currencyItems:
-  - _itemData: {fileID: 11400000, guid: 23e6036fdc1a3b64a909a0e77c458617, type: 2}
-    _amount: 156
-  _levelKrillItems:
-  - _itemData: {fileID: 11400000, guid: 389b2afd16b445c4f957df36beb9df27, type: 2}
-    _amount: 3
-  _statKrillItems:
-  - _itemData: {fileID: 11400000, guid: 0893b6ab6e033444a877e39d8afa721f, type: 2}
-    _amount: 15
-  _battleItems:
-  - _itemData: {fileID: 11400000, guid: b97720ac8ea9f294e95a24cca253ca6d, type: 2}
-    _amount: 2
+  _currencyItems: []
+  _levelKrillItems: []
+  _statKrillItems: []
+  _battleItems: []
   _weapons: []
   _focuses: []
   _armor: []

@@ -45,7 +45,7 @@ public class HomeEncounterInfoUI : MonoBehaviour
 
             nameText.text = _encounter.EncounterData.Name;
             areaText.text = $"Area: {_encounter.EncounterData.Area.Name}";
-            difficultyLevelText.text = $"Difficulty: {_encounter.EncounterData.DifficultyLevel}";
+            difficultyLevelText.text = $"Difficulty: Lvl {_encounter.EncounterData.DifficultyLevel}";
             typeText.text = $"Type: {string.Concat(_encounter.EncounterData.Type.ToString().Select(x => char.IsUpper(x) ? " " + x : x.ToString())).Trim()}";
             timesClearedText.text = $"Times Cleared: {_encounter.TimesCleared}";
 

@@ -23,17 +23,37 @@ MonoBehaviour:
   _waves:
   - _enemies:
     - _characterData: {fileID: 11400000, guid: be46815d091d6b14ba9ce7474fb279c2, type: 2}
-      _level: 100
+      _level: 3
       _isPlayerTeam: 0
-      baseStatPoints: 137
+      baseStatPoints: 1253
       additionalStatPoints: 0
-      _uniqueCharacterId: 5afd4227-2323-4639-8cdd-6a7c63870876
+      _uniqueCharacterId: 3e3e628e-7a28-47e9-9586-5c9631819199
+      _enemyData: {fileID: 11400000, guid: 56814c1c6d93d2a498966674adc0bc31, type: 2}
+    - _characterData: {fileID: 11400000, guid: be46815d091d6b14ba9ce7474fb279c2, type: 2}
+      _level: 3
+      _isPlayerTeam: 0
+      baseStatPoints: 1253
+      additionalStatPoints: 0
+      _uniqueCharacterId: 3e3e628e-7a28-47e9-9586-5c9631819199
+      _enemyData: {fileID: 11400000, guid: f685163ae6b99fe40aec5e781b00f8d4, type: 2}
+    - _characterData: {fileID: 11400000, guid: be46815d091d6b14ba9ce7474fb279c2, type: 2}
+      _level: 3
+      _isPlayerTeam: 0
+      baseStatPoints: 1253
+      additionalStatPoints: 0
+      _uniqueCharacterId: 3e3e628e-7a28-47e9-9586-5c9631819199
       _enemyData: {fileID: 11400000, guid: be46815d091d6b14ba9ce7474fb279c2, type: 2}
   _firstClearRewards:
   - _item: {fileID: 11400000, guid: 389b2afd16b445c4f957df36beb9df27, type: 2}
     _amount: 1
   - _item: {fileID: 11400000, guid: 23e6036fdc1a3b64a909a0e77c458617, type: 2}
     _amount: 30
+  - _item: {fileID: 11400000, guid: d4d54f2b335d39347be116473fbdbe0e, type: 2}
+    _amount: 1
+  - _item: {fileID: 11400000, guid: 6c87e2be19558c34b8d674f7e84e51d7, type: 2}
+    _amount: 2
+  - _item: {fileID: 11400000, guid: b97720ac8ea9f294e95a24cca253ca6d, type: 2}
+    _amount: 3
   _subsequentClearRewards:
   - _item: {fileID: 11400000, guid: 389b2afd16b445c4f957df36beb9df27, type: 2}
     _randomizationType: 1
@@ -49,3 +69,29 @@ MonoBehaviour:
     _minAmount: 3
     _maxAmount: 5
     _amountChancePairs: []
+  - _item: {fileID: 11400000, guid: d4d54f2b335d39347be116473fbdbe0e, type: 2}
+    _randomizationType: 0
+    _minAmount: 0
+    _maxAmount: 1
+    _amountChancePairs: []
+  - _item: {fileID: 11400000, guid: b97720ac8ea9f294e95a24cca253ca6d, type: 2}
+    _randomizationType: 0
+    _minAmount: 0
+    _maxAmount: 2
+    _amountChancePairs: []
+  - _item: {fileID: 11400000, guid: 6c87e2be19558c34b8d674f7e84e51d7, type: 2}
+    _randomizationType: 0
+    _minAmount: 0
+    _maxAmount: 1
+    _amountChancePairs: []
+  - _item: {fileID: 11400000, guid: 0893b6ab6e033444a877e39d8afa721f, type: 2}
+    _randomizationType: 1
+    _minAmount: 0
+    _maxAmount: 0
+    _amountChancePairs:
+    - _amount: 0
+      _weight: 50
+    - _amount: 1
+      _weight: 35
+    - _amount: 2
+      _weight: 15

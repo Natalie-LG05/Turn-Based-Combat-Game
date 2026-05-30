@@ -7,7 +7,7 @@ using UnityEngine.SceneManagement;
 using UnityEngine.TextCore.Text;
 using UnityEngine.UI;
 
-public enum BattleState { Setup, ActionSelection, MoveSelection, MoveTargetSelection, SwitchingPartyMembers, ReplaceDeadPartyMember, ItemSelectionScreen, ItemTargetSelection, EnemyTurn, PerformMove, UseItem, RoundEnd, Busy, PlayerWin, PlayerLose }
+public enum BattleState { Setup, ActionSelection, MoveSelection, MoveTargetSelection, SwitchingPartyMembers, ReplaceDeadPartyMember, ItemSelectionScreen, ItemTargetSelection, CharacterInfoScreen, EnemyTurn, PerformMove, UseItem, RoundEnd, Busy, PlayerWin, PlayerLose }
 
 /// <summary>
 /// Manages battle, containing the main gameplay loop during combat and handling much of the logic.
@@ -55,11 +55,12 @@ public class BattleManager : MonoBehaviour
     [SerializeField] private GameObject partyMemberSelectionUIGO;
     private PartyMemberSelectionUI partyMemberSelectionUI;
 
-    [SerializeField] private GameObject effectInfoTooltip;
-
     [SerializeField] private GameObject itemSelectionUIGO;
     [SerializeField] private GameObject itemInfoUIGO;
     private ItemSelectionUI itemSelectionUI;
+
+    [SerializeField] private GameObject characterInfoUIGO;
+    private BattleCharacterInfoUI characterInfoUI;
 
     [SerializeField] private GameObject winScreenUIGO;
     private WinScreenUI winScreenUI;
@@ -71,6 +72,8 @@ public class BattleManager : MonoBehaviour
     private MoveData selectedMove;
     private BattleItemData selectedItem;
     private bool partyMemberDiedThisTurn;
+
+    [SerializeField] private GameObject effectInfoTooltip;
 
     // Unity game object methods
     private void Awake()
@@ -87,6 +90,7 @@ public class BattleManager : MonoBehaviour
         moveSelectionUI = moveSelectionUIGO.GetComponent<MoveSelectionUI>();
         partyMemberSelectionUI = partyMemberSelectionUIGO.GetComponent<PartyMemberSelectionUI>();
         itemSelectionUI = itemSelectionUIGO.GetComponent<ItemSelectionUI>();
+        characterInfoUI = characterInfoUIGO.GetComponent<BattleCharacterInfoUI>();
         winScreenUI = winScreenUIGO.GetComponent<WinScreenUI>();
         loseScreenUI = loseScreenUIGO.GetComponent<LoseScreenUI>();
 
@@ -124,7 +128,7 @@ public class BattleManager : MonoBehaviour
                     State = BattleState.ItemSelectionScreen;
                 }
                 break;
-            case BattleState.MoveSelection or BattleState.SwitchingPartyMembers or BattleState.ItemSelectionScreen:
+            case BattleState.MoveSelection or BattleState.SwitchingPartyMembers or BattleState.ItemSelectionScreen or BattleState.CharacterInfoScreen:
                 // pressing escape is the same as clicking the back button
                 if (Keyboard.current.escapeKey.wasPressedThisFrame)
                 {
@@ -289,6 +293,16 @@ public class BattleManager : MonoBehaviour
         }
     }
 
+    public void CharacterPlateRightClicked(CharacterInstance character)
+    {
+        if (State == BattleState.ActionSelection)
+        {
+            State = BattleState.CharacterInfoScreen;
+            ShowCharacterInfoScreen();
+            characterInfoUI.SetCharacter(character);
+        }
+    }
+
     /// <summary>
     /// When the run button is clicked, determine if a lose penalty should be inflicted and then end combat, showing the lose screen.
     /// </summary>
@@ -363,7 +377,7 @@ public class BattleManager : MonoBehaviour
     /// </summary>
     public void BackButtonClicked()
     {
-        if (State == BattleState.MoveSelection || State == BattleState.SwitchingPartyMembers || State == BattleState.ItemSelectionScreen || State == BattleState.ItemTargetSelection)
+        if (State == BattleState.MoveSelection || State == BattleState.SwitchingPartyMembers || State == BattleState.ItemSelectionScreen || State == BattleState.ItemTargetSelection || State == BattleState.CharacterInfoScreen)
         {
             ShowActionSelectionScreen();
             State = BattleState.ActionSelection;
@@ -1150,6 +1164,7 @@ public class BattleManager : MonoBehaviour
         SetMoveSelectionScreen(false);
         SetPartyScreen(false);
         SetItemSelectionScreen(false);
+        SetCharacterInfoScreen(false);
     }
 
     private void ShowMoveSelectionScreen()
@@ -1158,6 +1173,7 @@ public class BattleManager : MonoBehaviour
         SetActionSelectionScreen(false);
         SetPartyScreen(false);
         SetItemSelectionScreen(false);
+        SetCharacterInfoScreen(false);
     }
 
     private void ShowPartyScreen()
@@ -1166,11 +1182,22 @@ public class BattleManager : MonoBehaviour
         SetActionSelectionScreen(false);
         SetMoveSelectionScreen(false);
         SetItemSelectionScreen(false);
+        SetCharacterInfoScreen(false);
     }
 
     private void ShowItemSelectionScreen()
     {
         SetItemSelectionScreen(true);
+        SetActionSelectionScreen(false);
+        SetMoveSelectionScreen(false);
+        SetPartyScreen(false);
+        SetCharacterInfoScreen(false);
+    }
+
+    private void ShowCharacterInfoScreen()
+    {
+        SetCharacterInfoScreen(true);
+        SetItemSelectionScreen(false);
         SetActionSelectionScreen(false);
         SetMoveSelectionScreen(false);
         SetPartyScreen(false);
@@ -1182,6 +1209,7 @@ public class BattleManager : MonoBehaviour
         SetPartyScreen(false);
         SetActionSelectionScreen(false);
         SetMoveSelectionScreen(false);
+        SetCharacterInfoScreen(false);
     }
 
     private void ShowLoseScreen()
@@ -1190,6 +1218,7 @@ public class BattleManager : MonoBehaviour
         SetPartyScreen(false);
         SetActionSelectionScreen(false);
         SetMoveSelectionScreen(false);
+        SetCharacterInfoScreen(false);
     }
 
     /// <summary>
@@ -1229,6 +1258,15 @@ public class BattleManager : MonoBehaviour
     {
         itemSelectionUIGO.SetActive(isActive);
         itemInfoUIGO.SetActive(isActive);
+    }
+
+    /// <summary>
+    /// Set whether or not the character info screen game objects are active.
+    /// </summary>
+    /// <param name="isActive">Whether or not the item selection screen game objects are active.</param>
+    private void SetCharacterInfoScreen(bool isActive)
+    {
+        characterInfoUIGO.SetActive(isActive);
     }
 
     /// <summary>

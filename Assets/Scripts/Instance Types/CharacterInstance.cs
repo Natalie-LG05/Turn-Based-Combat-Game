@@ -602,6 +602,16 @@ public class CharacterInstance
     }
 
     /// <summary>
+    /// Get the value of a base stat on this character. A base stat is the base stat this character has at its level plus any boosts from stat krill or equipment.
+    /// </summary>
+    /// <param name="stat">The stat to get the value of.</param>
+    /// <returns>The current base value of the provided stat.</returns>
+    public int GetBaseStat(Stat stat)
+    {
+        return _baseStats[stat];
+    }
+
+    /// <summary>
     /// Set the moveset of this character based on its level.
     /// </summary>
     protected void DetermineMoveset()

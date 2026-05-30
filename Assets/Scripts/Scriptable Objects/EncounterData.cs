@@ -131,20 +131,19 @@ public class RandomEncounterReward : EncounterReward
 
         return 0;  // just here as a fallthrough so the code will compile with no errors, this line should never actually be reached during runtime
     }
+}
 
+/// <summary>
+/// A class that contains two integers, the amount of an item to award, and the weight for that amount which is used when randomly determining the amount.
+/// </summary>
+[System.Serializable]
+public class AmountChancePair
+{
+    [SerializeField] private int _amount;
+    [SerializeField] private int _weight;
 
-    /// <summary>
-    /// A class that contains two integers, the amount of an item to award, and the weight for that amount which is used when randomly determining the amount.
-    /// </summary>
-    [System.Serializable]
-    public class AmountChancePair
-    {
-        [SerializeField] private int _amount;
-        [SerializeField] private int _weight;
-
-        public int Amount { get => _amount; }
-        public int Weight { get => _weight; }
-    }
+    public int Amount { get => _amount; }
+    public int Weight { get => _weight; }
 }
 
 public enum RandomizationType { Range, Weighted }
